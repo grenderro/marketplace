@@ -1,0 +1,6 @@
+{
+    "name": "marketplace",
+    "description": "NFT Marketplace with auctions, offers, and royalties",
+    "version": "0.0.1",
+    "language": "rust"
+}
