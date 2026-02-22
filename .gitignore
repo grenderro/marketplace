@@ -1,5 +1,31 @@
+# Dependencies
 node_modules/
-dist/
-target/
+**/node_modules/
+
+# Environment variables
 .env
-*.wasm
+**/.env
+
+# Build outputs
+dist/
+build/
+target/
+**/target/
+**/*.wasm
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Testing
+coverage/
