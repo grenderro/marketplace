@@ -29,3 +29,41 @@ __pycache__/
 
 # Testing
 coverage/
+# Rust/Contracts
+/contracts/**/target/
+/contracts/**/Cargo.lock
+/contracts/**/output/*.wasm.code
+*.rs.bk
+
+# Node.js (Backend/Frontend/Mobile)
+**/node_modules/
+**/dist/
+**/build/
+**/.env
+**/.env.local
+**/.env.production
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (Deploy scripts)
+/scripts/**/__pycache__/
+/scripts/**/*.pyc
+/scripts/**/.venv/
+/scripts/**/venv/
+
+# React Native
+/mobile/ios/Pods/
+/mobile/ios/build/
+/mobile/android/app/build/
+/mobile/.expo/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
