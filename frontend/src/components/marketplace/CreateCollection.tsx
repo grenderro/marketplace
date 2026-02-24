@@ -1,0 +1,410 @@
+// components/CreateCollection.tsx
+import React, { useState } from 'react';
+import { useGetAccountInfo, useGetNetworkConfig } from '@multiversx/sdk-dapp/hooks';
+import { Transaction, TransactionPayload, TokenTransfer } from '@multiversx/sdk-core';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface CollectionFormData {
+  name: string;
+  ticker: string;
+  description: string;
+  maxSupply: number;
+  mintPrice: string;
+  royalties: number;
+  isSoulbound: boolean;
+  whitelistEnabled: boolean;
+  maxPerWallet: number;
+  mintStartDate: string;
+  mintEndDate: string;
+  image: File | null;
+  banner: File | null;
+}
+
+const STEPS = ['Basic Info', 'Tokenomics', 'Assets', 'Review'];
+
+export const CreateCollection: React.FC = () => {
+  const { address } = useGetAccountInfo();
+  const { network } = useGetNetworkConfig();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isCreating, setIsCreating] = useState(false);
+  const [formData, setFormData] = useState<CollectionFormData>({
+    name: '',
+    ticker: '',
+    description: '',
+    maxSupply: 10000,
+    mintPrice: '0.1',
+    royalties: 2.5,
+    isSoulbound: false,
+    whitelistEnabled: false,
+    maxPerWallet: 0,
+    mintStartDate: '',
+    mintEndDate: '',
+    image: null,
+    banner: null,
+  });
+
+  const handleCreate = async () => {
+    setIsCreating(true);
+    
+    try {
+      // 1. Upload images to IPFS
+      const imageHash = await uploadToIPFS(formData.image!);
+      const bannerHash = await uploadToIPFS(formData.banner!);
+      
+      // 2. Create metadata JSON
+      const metadata = {
+        name: formData.name,
+        description: formData.description,
+        image: `ipfs://${imageHash}`,
+        banner: `ipfs://${bannerHash}`,
+      };
+      const metadataHash = await uploadJSONToIPFS(metadata);
+      
+      // 3. Prepare transaction
+      const tx = new Transaction({
+        nonce: await getNonce(address),
+        value: TokenTransfer.egldFromAmount(0.05), // Issue cost
+        receiver: new Address(network.apiAddress),
+        gasLimit: 100000000,
+        data: TransactionPayload.contractCall()
+          .setFunction(new ContractFunction('createCollection'))
+          .addArg(new StringValue(formData.name))
+          .addArg(new StringValue(formData.ticker))
+          .addArg(new BigUIntValue(formData.maxSupply))
+          .addArg(new BigUIntValue(parseAmount(formData.mintPrice)))
+          .addArg(new U64Value(formData.royalties * 100)) // Basis points
+          .addArg(new StringValue(`ipfs://${metadataHash}`))
+          .addArg(new BooleanValue(formData.isSoulbound))
+          .addArg(new U64Value(new Date(formData.mintStartDate).getTime() / 1000))
+          .addArg(new U64Value(new Date(formData.mintEndDate).getTime() / 1000))
+          .addArg(new BooleanValue(formData.whitelistEnabled))
+          .addArg(new U64Value(formData.maxPerWallet))
+          .addArg(new StringValue('canFreeze')) // Properties
+          .addArg(new StringValue('canWipe'))
+          .addArg(new StringValue('canPause'))
+          .build(),
+        chainID: network.chainId,
+      });
+      
+      // 4. Sign and send
+      await sendTransaction(tx);
+      
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Progress Steps */}
+      <div className="flex justify-between mb-8">
+        {STEPS.map((step, idx) => (
+          <div key={step} className="flex items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+              idx <= currentStep 
+                ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white' 
+                : 'bg-gray-800 text-gray-500'
+            }`}>
+              {idx < currentStep ? '✓' : idx + 1}
+            </div>
+            <span className={`ml-3 ${idx <= currentStep ? 'text-white' : 'text-gray-500'}`}>
+              {step}
+            </span>
+            {idx < STEPS.length - 1 && (
+              <div className={`w-24 h-1 mx-4 ${
+                idx < currentStep ? 'bg-gradient-to-r from-cyan-500 to-purple-500' : 'bg-gray-800'
+              }`} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Form Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="bg-[#12121a] rounded-2xl p-8 border border-gray-800"
+        >
+          {currentStep === 0 && (
+            <BasicInfoStep formData={formData} setFormData={setFormData} />
+          )}
+          {currentStep === 1 && (
+            <TokenomicsStep formData={formData} setFormData={setFormData} />
+          )}
+          {currentStep === 2 && (
+            <AssetsStep formData={formData} setFormData={setFormData} />
+          )}
+          {currentStep === 3 && (
+            <ReviewStep formData={formData} onCreate={handleCreate} isCreating={isCreating} />
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Navigation */}
+      <div className="flex justify-between mt-8">
+        <button
+          onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
+          disabled={currentStep === 0}
+          className="px-6 py-3 rounded-xl border border-gray-700 text-gray-400 hover:text-white disabled:opacity-50"
+        >
+          Previous
+        </button>
+        
+        {currentStep < STEPS.length - 1 ? (
+          <button
+            onClick={() => setCurrentStep(currentStep + 1)}
+            className="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-purple-500 text-white font-bold"
+          >
+            Next Step
+          </button>
+        ) : (
+          <button
+            onClick={handleCreate}
+            disabled={isCreating}
+            className="px-8 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold flex items-center gap-2"
+          >
+            {isCreating ? (
+              <>
+                <Spinner className="w-5 h-5 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Deploy Collection'
+            )}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Step Components
+const BasicInfoStep: React.FC<{
+  formData: CollectionFormData;
+  setFormData: React.Dispatch<React.SetStateAction<CollectionFormData>>;
+}> = ({ formData, setFormData }) => (
+  <div className="space-y-6">
+    <div>
+      <label className="block text-sm font-semibold text-gray-400 mb-2">
+        Collection Name *
+      </label>
+      <input
+        type="text"
+        value={formData.name}
+        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+        placeholder="e.g., Cosmic Warriors"
+        className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+      />
+    </div>
+    
+    <div>
+      <label className="block text-sm font-semibold text-gray-400 mb-2">
+        Token Ticker *
+        <span className="text-xs text-gray-500 ml-2">(3-10 uppercase letters)</span>
+      </label>
+      <input
+        type="text"
+        value={formData.ticker}
+        onChange={(e) => setFormData({ ...formData, ticker: e.target.value.toUpperCase() })}
+        placeholder="e.g., WARRIOR"
+        maxLength={10}
+        className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none font-mono"
+      />
+    </div>
+    
+    <div>
+      <label className="block text-sm font-semibold text-gray-400 mb-2">
+        Description
+      </label>
+      <textarea
+        value={formData.description}
+        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+        rows={4}
+        placeholder="Tell the story of your collection..."
+        className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none resize-none"
+      />
+    </div>
+  </div>
+);
+
+const TokenomicsStep: React.FC<{
+  formData: CollectionFormData;
+  setFormData: React.Dispatch<React.SetStateAction<CollectionFormData>>;
+}> = ({ formData, setFormData }) => (
+  <div className="space-y-6">
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-semibold text-gray-400 mb-2">
+          Max Supply *
+        </label>
+        <input
+          type="number"
+          value={formData.maxSupply}
+          onChange={(e) => setFormData({ ...formData, maxSupply: parseInt(e.target.value) })}
+          min={1}
+          max={100000}
+          className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-semibold text-gray-400 mb-2">
+          Mint Price (EGLD)
+        </label>
+        <input
+          type="number"
+          step="0.01"
+          value={formData.mintPrice}
+          onChange={(e) => setFormData({ ...formData, mintPrice: e.target.value })}
+          placeholder="0.00 for free mint"
+          className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label className="block text-sm font-semibold text-gray-400 mb-2">
+        Creator Royalties: {formData.royalties}%
+      </label>
+      <input
+        type="range"
+        min="0"
+        max="10"
+        step="0.5"
+        value={formData.royalties}
+        onChange={(e) => setFormData({ ...formData, royalties: parseFloat(e.target.value) })}
+        className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+      />
+      <p className="text-xs text-gray-500 mt-1">
+        You receive this % on every secondary market sale
+      </p>
+    </div>
+
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-semibold text-gray-400 mb-2">
+          Mint Start Date
+        </label>
+        <input
+          type="datetime-local"
+          value={formData.mintStartDate}
+          onChange={(e) => setFormData({ ...formData, mintStartDate: e.target.value })}
+          className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+        />
+      </div>
+      
+      <div>
+        <label className="block text-sm font-semibold text-gray-400 mb-2">
+          Mint End Date
+        </label>
+        <input
+          type="datetime-local"
+          value={formData.mintEndDate}
+          onChange={(e) => setFormData({ ...formData, mintEndDate: e.target.value })}
+          className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
+        />
+      </div>
+    </div>
+
+    <div className="space-y-3">
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={formData.whitelistEnabled}
+          onChange={(e) => setFormData({ ...formData, whitelistEnabled: e.target.checked })}
+          className="w-5 h-5 rounded border-gray-600 bg-[#1a1a25] text-cyan-500 focus:ring-cyan-500"
+        />
+        <span className="text-white">Enable Whitelist</span>
+      </label>
+      
+      <label className="flex items-center gap-3 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={formData.isSoulbound}
+          onChange={(e) => setFormData({ ...formData, isSoulbound: e.target.checked })}
+          className="w-5 h-5 rounded border-gray-600 bg-[#1a1a25] text-cyan-500 focus:ring-cyan-500"
+        />
+        <span className="text-white">Soulbound (Non-transferable)</span>
+        <span className="text-xs text-gray-500">Cannot be traded after mint</span>
+      </label>
+    </div>
+  </div>
+);
+
+const AssetsStep: React.FC<{
+  formData: CollectionFormData;
+  setFormData: React.Dispatch<React.SetStateAction<CollectionFormData>>;
+}> = ({ formData, setFormData }) => (
+  <div className="space-y-6">
+    <div>
+      <label className="block text-sm font-semibold text-gray-400 mb-2">
+        Collection Image *
+      </label>
+      <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-cyan-400 transition-colors">
+        {formData.image ? (
+          <div className="relative">
+            <img 
+              src={URL.createObjectURL(formData.image)} 
+              alt="Preview" 
+              className="w-32 h-32 mx-auto rounded-xl object-cover"
+            />
+            <button
+              onClick={() => setFormData({ ...formData, image: null })}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white"
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label className="cursor-pointer">
+            <div className="text-4xl mb-2">📁</div>
+            <p className="text-gray-400">Drop image or click to upload</p>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })}
+              className="hidden"
+            />
+          </label>
+        )}
+      </div>
+    </div>
+
+    <div>
+      <label className="block text-sm font-semibold text-gray-400 mb-2">
+        Banner Image
+      </label>
+      <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-purple-400 transition-colors">
+        {formData.banner ? (
+          <div className="relative">
+            <img 
+              src={URL.createObjectURL(formData.banner)} 
+              alt="Banner" 
+              className="w-full h-32 mx-auto rounded-xl object-cover"
+            />
+            <button
+              onClick={() => setFormData({ ...formData, banner: null })}
+              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 rounded-full text-white"
+            >
+              ×
+            </button>
+          </div>
+        ) : (
+          <label className="cursor-pointer">
+            <div className="text-4xl mb-2">🖼️</div>
+            <p className="text-gray-400">Recommended: 1400x400px</p>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setFormData({ ...formData, banner: e.target.files?.[0] || null })}
+              className="hidden"
+            />
+          </label>
+        )}
+      </div>
+    </div>
+  </div>
+);

@@ -1,3 +1,45 @@
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+
+# Contract output (keep for releases)
+!multiversx-marketplace/contracts/marketplace/output/
+multiversx-marketplace/contracts/marketplace//output/*.txt
+
+# Wallets
+*.pem
+!*.pem.example
+*.json
+!multiversx.json
+wallet*
+!wallet.example.json
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
 # Dependencies
 node_modules/
 **/node_modules/
@@ -67,3 +109,7 @@ yarn-error.log*
 # OS
 .DS_Store
 Thumbs.db
+
+# Keep compiled contract output but ignore build artifacts
+/contracts/**/target/
+!/contracts/**/output/*.wasm

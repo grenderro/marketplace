@@ -1,6 +1,46 @@
 {
-    "name": "marketplace",
-    "description": "NFT Marketplace with auctions, offers, and royalties",
-    "version": "0.0.1",
-    "language": "rust"
+  "name": "MultiversX Marketplace",
+  "description": "Full-featured NFT and ESDT marketplace with auctions, offers, and batch operations",
+  "version": "1.0.0",
+  "authors": ["Your Name"],
+  "homepage": "https://your-marketplace.com",
+  "license": "MIT",
+  "endpoints": [
+    {
+      "name": "createListing",
+      "description": "Create a fixed-price listing",
+      "inputs": [
+        {"name": "price_token", "type": "TokenIdentifier"},
+        {"name": "price_amount", "type": "BigUint"}
+      ],
+      "outputs": [{"type": "u64"}]
+    },
+    {
+      "name": "buyListing",
+      "description": "Purchase a listing",
+      "inputs": [{"name": "listing_id", "type": "u64"}],
+      "outputs": []
+    },
+    {
+      "name": "createAuction",
+      "description": "Create a timed auction",
+      "inputs": [
+        {"name": "min_bid", "type": "BigUint"},
+        {"name": "duration_seconds", "type": "u64"},
+        {"name": "payment_token", "type": "TokenIdentifier"}
+      ],
+      "outputs": [{"type": "u64"}]
+    }
+  ],
+  "networks": {
+    "devnet": {
+      "address": ""
+    },
+    "testnet": {
+      "address": ""
+    },
+    "mainnet": {
+      "address": ""
+    }
+  }
 }
