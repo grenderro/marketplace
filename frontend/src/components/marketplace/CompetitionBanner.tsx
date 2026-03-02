@@ -1,4 +1,5 @@
 // components/CompetitionBanner.tsx
+import { LeaderboardPreview } from '@/components/stubs';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';

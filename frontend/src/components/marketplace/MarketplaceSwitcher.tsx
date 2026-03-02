@@ -1,33 +1,27 @@
-// components/MarketplaceSwitcher.tsx
 import React from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { Link, useLocation } from 'react-router-dom';
 
 export const MarketplaceSwitcher: React.FC = () => {
-  const router = useRouter();
-  const isNFT = router.pathname.startsWith('/marketplace/nfts');
+  const location = useLocation();
+  const isNFT = location.pathname.includes('/nfts');
 
   return (
-    <div className="flex bg-[#1a1a25] rounded-xl p-1 border border-gray-800">
+    <div className="flex items-center gap-4 bg-[#12121a] p-1 rounded-lg border border-gray-800">
       <Link
-        href="/marketplace/nfts"
+        to="/marketplace/nfts"
         className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold transition-all ${
-          isNFT
-            ? 'bg-purple-500 text-white shadow-lg'
-            : 'text-gray-400 hover:text-white'
+          isNFT ? 'bg-purple-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
         }`}
       >
-        🎨 NFTs
+        <span>NFT Marketplace</span>
       </Link>
       <Link
-        href="/marketplace/esdt"
+        to="/marketplace/esdt"
         className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-bold transition-all ${
-          !isNFT
-            ? 'bg-green-500 text-white shadow-lg'
-            : 'text-gray-400 hover:text-white'
+          !isNFT ? 'bg-green-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'
         }`}
       >
-        💰 Tokens
+        <span>Token Marketplace</span>
       </Link>
     </div>
   );

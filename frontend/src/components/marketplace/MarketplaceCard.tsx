@@ -1,6 +1,6 @@
 // components/MarketplaceCard.tsx
 import React, { useState } from 'react';
-import { useGetAccountInfo, useGetNetworkConfig } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo, useGetNetworkConfig } from '../../hooks/sdkStubs';
 import { ContractFunction, Transaction, TransactionPayload } from '@multiversx/sdk-core';
 import { formatAmount, formatDate } from '@/utils/format';
 

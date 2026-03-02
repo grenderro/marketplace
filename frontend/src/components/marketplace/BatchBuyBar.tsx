@@ -1,6 +1,6 @@
 // components/BatchBuyBar.tsx
 import React from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo } from '../../hooks/sdkStubs';
 
 interface SelectedItem {
   id: number;

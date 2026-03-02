@@ -1,0 +1,17 @@
+name: Contracts
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          target: wasm32-unknown-unknown
+      - name: Build Contracts
+        run: |
+          cd contracts/marketplace
+          cargo build --release
+          cargo test

@@ -1,10 +1,7 @@
 // pages/marketplace/esdt/index.tsx
 import React, { useState } from 'react';
-import { TokenPriceChart } from '@/components/TokenPriceChart';
-import { TokenList } from '@/components/TokenList';
-import { SwapInterface } from '@/components/SwapInterface';
-import { LiquidityPools } from '@/components/LiquidityPools';
-import { TrendingTokens } from '@/components/TrendingTokens';
+import { TokenPriceChart, TokenList, SwapInterface, LiquidityPools, TrendingTokens } from '@/components/stubs';
+import { TokenFilters, TokenLaunchpad } from '@/components/stubs';
 
 export default function ESDTMarketplace() {
   const [activeTab, setActiveTab] = useState<'swap' | 'tokens' | 'liquidity' | 'launchpad'>('swap');

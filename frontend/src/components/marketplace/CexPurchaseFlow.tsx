@@ -1,6 +1,7 @@
 // components/CexPurchaseFlow.tsx
+import { motion } from 'framer-motion';
+import { useGetAccountInfo } from '@/hooks/sdkStubs';
 import React, { useState } from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 import { BinanceConnect } from './BinanceConnect';
 import { SmartTokenSelector } from './SmartTokenSelector';
 

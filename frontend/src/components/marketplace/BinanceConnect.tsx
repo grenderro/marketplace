@@ -1,6 +1,6 @@
 // components/BinanceConnect.tsx
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface BinanceUser {
@@ -24,7 +24,7 @@ export const BinanceConnect: React.FC<{
   const [isConnected, setIsConnected] = useState(false);
   const [user, setUser] = useState<BinanceUser | null>(null);
   const [balances, setBalances] = useState<BinanceBalance[]>([]);
-  const searchParams = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Handle OAuth callback
   useEffect(() => {

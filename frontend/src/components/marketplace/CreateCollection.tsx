@@ -1,8 +1,22 @@
 // components/CreateCollection.tsx
 import React, { useState } from 'react';
-import { useGetAccountInfo, useGetNetworkConfig } from '@multiversx/sdk-dapp/hooks';
-import { Transaction, TransactionPayload, TokenTransfer } from '@multiversx/sdk-core';
+import { Spinner } from '@/components/stubs';
+import { useGetAccountInfo, useGetNetworkConfig } from '@/hooks/sdkStubs';
+import { 
+  Transaction, 
+  TransactionPayload, 
+  TokenTransfer,
+  Address,
+  ContractFunction,
+  StringValue,
+  BigUIntValue,
+  U64Value,
+  BooleanValue
+} from '@multiversx/sdk-core';
 import { motion, AnimatePresence } from 'framer-motion';
+import { uploadToIPFS, uploadJSONToIPFS } from '@/services/ipfs';
+import { getNonce, sendTransaction, parseAmount } from '@/utils/contract';
+
 
 interface CollectionFormData {
   name: string;
@@ -60,29 +74,24 @@ export const CreateCollection: React.FC = () => {
       };
       const metadataHash = await uploadJSONToIPFS(metadata);
       
-      // 3. Prepare transaction
+                  // 3. Prepare transaction - Compatible with sdk-core 12.x/15.x
+      const data = new TransactionPayload(
+        `createCollection@` +
+        `${Buffer.from(formData.name).toString('hex')}@` +
+        `${Buffer.from(formData.ticker).toString('hex')}@` +
+        `${formData.maxSupply.toString(16)}@` +
+        `${(parseFloat(formData.mintPrice) * 1e18).toString(16)}@` +
+        `${(formData.royalties * 100).toString(16)}@` +
+        `${Buffer.from(`ipfs://${metadataHash}`).toString('hex')}`
+      );
+
       const tx = new Transaction({
         nonce: await getNonce(address),
-        value: TokenTransfer.egldFromAmount(0.05), // Issue cost
-        receiver: new Address(network.apiAddress),
+        value: TokenTransfer.egldFromAmount(0.05),
+        sender: Address.fromBech32(address),
+        receiver: Address.fromBech32(network.apiAddress),
         gasLimit: 100000000,
-        data: TransactionPayload.contractCall()
-          .setFunction(new ContractFunction('createCollection'))
-          .addArg(new StringValue(formData.name))
-          .addArg(new StringValue(formData.ticker))
-          .addArg(new BigUIntValue(formData.maxSupply))
-          .addArg(new BigUIntValue(parseAmount(formData.mintPrice)))
-          .addArg(new U64Value(formData.royalties * 100)) // Basis points
-          .addArg(new StringValue(`ipfs://${metadataHash}`))
-          .addArg(new BooleanValue(formData.isSoulbound))
-          .addArg(new U64Value(new Date(formData.mintStartDate).getTime() / 1000))
-          .addArg(new U64Value(new Date(formData.mintEndDate).getTime() / 1000))
-          .addArg(new BooleanValue(formData.whitelistEnabled))
-          .addArg(new U64Value(formData.maxPerWallet))
-          .addArg(new StringValue('canFreeze')) // Properties
-          .addArg(new StringValue('canWipe'))
-          .addArg(new StringValue('canPause'))
-          .build(),
+        data: data,
         chainID: network.chainId,
       });
       
@@ -93,6 +102,26 @@ export const CreateCollection: React.FC = () => {
       setIsCreating(false);
     }
   };
+
+const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
+    <div className="space-y-4">
+      <h3 className="text-xl font-bold">Review</h3>
+      <button 
+        onClick={onCreate}
+        disabled={isCreating}
+        className="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-lg font-bold text-black hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+      >
+        {isCreating ? (
+          <>
+            <div className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+            Creating...
+          </>
+        ) : (
+          'Create Collection'
+        )}
+      </button>
+    </div>
+  );
 
   return (
     <div className="max-w-4xl mx-auto">

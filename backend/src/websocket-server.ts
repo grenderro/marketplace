@@ -1,74 +1,87 @@
 // backend/src/websocket-server.ts
-import { WebSocketServer, WebSocket } from 'ws';
-import Redis from 'ioredis';
-import jwt from 'jsonwebtoken';
-import { Address } from '@multiversx/sdk-core';
+import { Server } from 'http';
+import WebSocket from 'ws';
+import { AppDataSource } from './data-source';
+import { listingRepository } from './data-source';
 
-// Import network provider separately (it may be in a different submodule)
-import { ProxyNetworkProvider } from '@multiversx/sdk-network-providers';
+export function setupWebSocketServer(server: Server) {
+    const wss = new WebSocket.Server({ server });
 
-interface Notification {
-  id: string;
-  type: 'sale' | 'bid' | 'offer' | 'auction_end' | 'price_drop' | 'outbid';
-  userAddress: string;
-  title: string;
-  message: string;
-  data: any;
-  timestamp: number;
-  read: boolean;
-}
+    wss.on('connection', (ws) => {
+        console.log('New WebSocket connection');
 
-export default class MarketplaceWebSocketServer {
-  private wss: WebSocketServer;
-  private redis: Redis;
-  private clients: Map<string, WebSocket> = new Map();
-  private provider: ProxyNetworkProvider;
-  private contractAddress: Address;
-
-  constructor(port: number) {
-    this.redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
-    this.provider = new ProxyNetworkProvider(process.env.GATEWAY_URL || 'https://devnet-gateway.multiversx.com');
-    // FIX: Use fromBech32 instead of newFromBech32
-    this.contractAddress = Address.fromBech32(process.env.CONTRACT_ADDRESS || 'erd1qqqqqqqqqqqqqpgqmzpauhqppu707208j8zrjq8q7trpgw7yvhuqtjt9ev');
-    this.wss = new WebSocketServer({ port });
-    
-    this.setupWebSocket();
-    console.log(`🔌 WebSocket server started on port ${port}`);
-  }
-
-  private setupWebSocket() {
-    this.wss.on('connection', async (ws: WebSocket, req) => {
-      try {
-        const userAddress = this.extractAddressFromUrl(req.url);
-        
-        if (!userAddress) {
-          ws.close(1008, 'Invalid authentication');
-          return;
-        }
-
-        this.clients.set(userAddress, ws);
-        ws.send(JSON.stringify({ type: 'connected', address: userAddress }));
+        ws.on('message', async (message) => {
+            try {
+                const data = JSON.parse(message.toString());
+                
+                switch (data.type) {
+                    case 'subscribe_listings':
+                        // Subscribe to new listings
+                        ws.send(JSON.stringify({
+                            type: 'subscribed',
+                            channel: 'listings'
+                        }));
+                        break;
+                    
+                    case 'subscribe_price':
+                        // Subscribe to price updates for specific NFT
+                        ws.send(JSON.stringify({
+                            type: 'subscribed',
+                            channel: `price:${data.nftId}`
+                        }));
+                        break;
+                    
+                    case 'ping':
+                        ws.send(JSON.stringify({ type: 'pong' }));
+                        break;
+                    
+                    default:
+                        ws.send(JSON.stringify({
+                            type: 'error',
+                            message: 'Unknown message type'
+                        }));
+                }
+            } catch (error) {
+                ws.send(JSON.stringify({
+                    type: 'error',
+                    message: 'Invalid message format'
+                }));
+            }
+        });
 
         ws.on('close', () => {
-          this.clients.delete(userAddress);
+            console.log('WebSocket disconnected');
         });
-      } catch (error) {
-        ws.close(1011, 'Internal error');
-      }
-    });
-  }
 
-  private extractAddressFromUrl(url?: string): string | null {
-    if (!url) return null;
-    try {
-      const params = new URLSearchParams(url.split('?')[1]);
-      const token = params.get('token');
-      if (!token) return null;
-      
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { address: string };
-      return decoded.address;
-    } catch {
-      return null;
-    }
-  }
+        // Send initial connection success
+        ws.send(JSON.stringify({
+            type: 'connected',
+            message: 'WebSocket server connected'
+        }));
+    });
+
+    // Broadcast to all connected clients
+    (global as any).broadcastToClients = (data: any) => {
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify(data));
+            }
+        });
+    };
+
+    console.log('✅ WebSocket server initialized');
+    return wss;
 }
+
+// Helper to broadcast events from other parts of the app
+export function broadcastEvent(eventType: string, payload: any) {
+    if ((global as any).broadcastToClients) {
+        (global as any).broadcastToClients({
+            type: eventType,
+            data: payload,
+            timestamp: new Date().toISOString()
+        });
+    }
+}
+
+export default setupWebSocketServer;

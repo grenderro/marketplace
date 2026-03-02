@@ -1,6 +1,6 @@
 // components/MarketplaceFilters.tsx
 import React, { useState, useCallback } from 'react';
-import { useGetNetworkConfig } from '@multiversx/sdk-dapp/hooks';
+import { useGetNetworkConfig } from '../../hooks/sdkStubs';
 
 interface Filters {
   type: 'all' | 'listing' | 'auction' | 'offer';
@@ -171,18 +171,18 @@ export const MarketplaceFilters: React.FC<{
         {/* Reset */}
         <button
           onClick={() => {
-            const reset = {
-              type: 'all',
-              status: 'all',
-              priceMin: '',
-              priceMax: '',
-              collections: [],
-              sortBy: 'recent',
-              sellerVerified: false,
-              attributes: {},
-            };
-            setFilters(reset);
-            onFilterChange(reset);
+            const reset: Filters = {
+  type: 'all',
+  status: 'all',
+  priceMin: '',
+  priceMax: '',
+  collections: [],
+  sortBy: 'recent',
+  sellerVerified: false,
+  attributes: {},
+};
+setFilters(reset);
+onFilterChange(reset);
           }}
           className="w-full py-2 border border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 transition-all text-sm"
         >

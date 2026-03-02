@@ -15,7 +15,8 @@ interface Report {
   status: 'pending' | 'under_review' | 'resolved_valid' | 'resolved_invalid';
 }
 
-export const ModeratorDashboard: React.FC = {
+// FIXED: Changed from = { to = () => {
+export const ModeratorDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'pending' | 'resolved' | 'flagged'>('pending');
   const [selectedReport, setSelectedReport] = useState<Report | null>(null);
 
@@ -54,7 +55,7 @@ export const ModeratorDashboard: React.FC = {
           { id: 'pending', label: 'Pending', count: 12 },
           { id: 'resolved', label: 'Resolved', count: 156 },
           { id: 'flagged', label: 'Flagged Items', count: 8 },
-        ].map((tab) => (
+        ].map((tab: any) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
@@ -104,7 +105,6 @@ export const ModeratorDashboard: React.FC = {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-cyan-400 hover:underline"
                   >
-                    <Eye className="w-4 h-4" />
                     View Evidence
                   </a>
                 )}

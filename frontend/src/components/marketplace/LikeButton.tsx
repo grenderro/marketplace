@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart } from 'lucide-react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo } from '../../hooks/sdkStubs';
 
 interface LikeButtonProps {
   targetType: 'nft' | 'collection' | 'user' | 'listing';

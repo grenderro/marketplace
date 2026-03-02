@@ -1,7 +1,7 @@
 // components/CreateESDT.tsx
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo } from '../../hooks/sdkStubs';
 
 type TokenType = 'fungible' | 'semi-fungible' | 'meta';
 

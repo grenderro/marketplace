@@ -44,3 +44,12 @@
     }
   }
 }
+// package.json (root)
+{
+  "scripts": {
+    "dev:contracts": "cd contracts/marketplace && cargo build",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "test:all": "npm run test:contracts && npm run test:backend"
+  }
+}

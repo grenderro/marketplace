@@ -1,6 +1,27 @@
 // components/SmartTokenSelector.tsx
+interface Token {
+  identifier: string;
+  name: string;
+  symbol: string;
+  iconUrl?: string;
+  priceUsd: number;
+  liquidityUsd: number;
+  volume24hUsd: number;
+  balance?: string;
+}
+
+// Find the interface definition and add cexBalances
+interface SmartTokenSelectorProps {
+  selectedToken: string;
+  onSelect: (token: Token) => void;
+  defaultTier?: LiquidityTier;
+  cexBalances?: any[];  // ADD THIS LINE
+}
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { LoadingState, EmptyState, TokenList } from '../stubs';
+
 
 type LiquidityTier = 'all' | 'micro' | 'low' | 'medium' | 'high' | 'institutional';
 
@@ -41,7 +62,8 @@ export const SmartTokenSelector: React.FC<{
   selectedToken: string;
   onSelect: (token: Token) => void;
   defaultTier?: LiquidityTier;
-}> = ({ selectedToken, onSelect, defaultTier = 'low' }) => {
+  cexBalances?: any[];
+}> = ({ selectedToken, onSelect, defaultTier = 'low', cexBalances }) => {
   const [activeTier, setActiveTier] = useState<LiquidityTier>(defaultTier);
   const [showTierInfo, setShowTierInfo] = useState(false);
 

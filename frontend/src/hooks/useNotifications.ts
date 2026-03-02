@@ -1,6 +1,6 @@
 // hooks/useNotifications.ts
 import { useEffect, useState, useCallback } from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo } from './sdkStubs';
 
 interface Notification {
   id: string;

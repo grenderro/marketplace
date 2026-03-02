@@ -1,6 +1,6 @@
 // components/OfferManager.tsx
 import React, { useState } from 'react';
-import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
+import { useGetAccountInfo } from '../../hooks/sdkStubs';
 
 interface Offer {
   id: number;

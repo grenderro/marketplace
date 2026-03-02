@@ -1,10 +1,6 @@
 // pages/marketplace/nfts/index.tsx
 import React from 'react';
-import { CompetitionBanner } from '@/components/CompetitionBanner';
-import { NFTGrid } from '@/components/NFTGrid';
-import { NFTFilters } from '@/components/NFTFilters';
-import { TrendingCollections } from '@/components/TrendingCollections';
-import { LiveAuctions } from '@/components/LiveAuctions';
+import { CompetitionBanner, NFTGrid, NFTFilters, TrendingCollections, LiveAuctions } from '@/components/stubs';
 
 export default function NFTMarketplace() {
   return (

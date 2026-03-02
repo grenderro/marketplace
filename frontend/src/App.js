@@ -3,130 +3,77 @@ import { useContract } from './hooks/useContract';
 import { useDeFiWallet } from './hooks/useDeFiWallet';
 import './App.css';
 
+const API_URL = 'http://localhost:3001/api';
 const LOGO_URL = 'https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeiegq45s2v4qixkghaz74ttknojllmw75wmb2wxl6bqyvyccfa2eve';
 
 function App() {
   const { fetchListingCount, fetchAllListings, loading } = useContract();
   const { account, isConnected, isInstalled, connect, disconnect, refreshConnection } = useDeFiWallet();
+  
   const [stats, setStats] = useState({ listings: 0, volume: '0' });
-  const [recentListings, setRecentListings] = useState([]);
+  const [backendStats, setBackendStats] = useState(null);
+  const [leaderboard, setLeaderboard] = useState(null);
 
   useEffect(() => {
-    loadData();
+    // Load blockchain data
+    loadBlockchainData();
+    
+    // Load backend data
+    loadBackendData();
   }, []);
 
-  const loadData = async () => {
-    const count = await fetchListingCount();
-    const listings = await fetchAllListings();
-    setStats({
-      listings: count,
-      volume: calculateVolume(listings)
-    });
-    setRecentListings(listings.slice(0, 4));
+  const loadBlockchainData = async () => {
+    try {
+      const count = await fetchListingCount();
+      setStats({ listings: count, volume: '0' });
+    } catch (err) {
+      console.error('Blockchain error:', err);
+    }
   };
 
-  const calculateVolume = (listings) => {
-    const total = listings.reduce((sum, l) => sum + parseInt(l.price || 0), 0);
-    return (total / 1e18).toFixed(2);
-  };
+  const loadBackendData = async () => {
+    try {
+      // Fetch from your Node.js backend
+      const statsRes = await fetch(`${API_URL}/analytics/stats`);
+      const statsData = await statsRes.json();
+      setBackendStats(statsData);
 
-  const handleConnect = async () => {
-    const result = await connect();
-    if (!result.success && result.error) {
-      alert(result.error);
+      const lbRes = await fetch(`${API_URL}/analytics/leaderboard`);
+      const lbData = await lbRes.json();
+      setLeaderboard(lbData);
+    } catch (err) {
+      console.error('Backend error:', err);
     }
   };
 
   return (
-    <div className="trad3e-app">
-      <header className="trad3e-header">
-        <div className="logo-container">
-          <img src={LOGO_URL} alt="Trad3E" className="logo-img" />
-          <h1 className="logo-text">TRAD3E</h1>
-        </div>
-        
-{isConnected ? (
-  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-    <span style={{ color: '#00ffd1', fontFamily: 'monospace' }}>
-      {account.slice(0, 6)}...{account.slice(-4)}
-    </span>
-    <button className="connect-btn" onClick={disconnect}>
-      DISCONNECT
-    </button>
-  </div>
-) : (
-  <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column', alignItems: 'flex-end' }}>
-    <button className="connect-btn" onClick={connect}>
-      CONNECT WEB WALLET
-    </button>
-    <small style={{ color: '#666', fontSize: '0.7rem' }}>
-      You'll return here after login
-    </small>
-  </div>
-)}
-      </header>
-
-      <section className="hero-section">
-        <div className="hero-content">
-          <h2 className="hero-title">
-            <span className="neon-cyan">WEB3</span> MARKETPLACE<br />
-            ON MULTIVERSX
-          </h2>
-          
-          <div className="hero-stats">
-            <div className="h-stat">
-              <span className="h-number">{stats.listings}</span>
-              <span className="h-label">LISTINGS</span>
-            </div>
-            <div className="h-stat">
-              <span className="h-number">{stats.volume}</span>
-              <span className="h-label">VOLUME (EGLD)</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="services-section">
-        <h3 className="section-title">ACTIVE LISTINGS</h3>
-        {loading ? (
-          <div className="loading-contract">Loading from blockchain...</div>
-        ) : (
-          <div className="listings-grid">
-            {recentListings.length > 0 ? (
-              recentListings.map((listing, idx) => (
-                <div key={idx} className="listing-card">
-                  <div className="listing-header">
-                    <span className="listing-id">#{listing.id}</span>
-                    <span className="listing-status">{listing.status}</span>
-                  </div>
-                  <div className="listing-body">
-                    <p className="listing-token">{listing.nft_token_id}</p>
-                    <p className="listing-price">{(parseInt(listing.price) / 1e18).toFixed(2)} EGLD</p>
-                  </div>
-                  <button 
-                    className="buy-btn" 
-                    disabled={!isConnected}
-                    style={{ 
-                      opacity: isConnected ? 1 : 0.5,
-                      cursor: isConnected ? 'pointer' : 'not-allowed',
-                      background: 'transparent',
-                      border: '1px solid #00ffd1',
-                      color: '#00ffd1',
-                      padding: '0.5rem 1rem',
-                      marginTop: '1rem',
-                      borderRadius: '8px'
-                    }}
-                  >
-                    {isConnected ? 'BUY NOW' : 'CONNECT WALLET TO BUY'}
-                  </button>
-                </div>
-              ))
-            ) : (
-              <p className="no-listings">No active listings found</p>
-            )}
-          </div>
+    <div className="App" style={{padding: 20, fontFamily: 'sans-serif'}}>
+      <h1>Trad3EX Marketplace</h1>
+      <img src={LOGO_URL} alt="Logo" style={{width: 100, height: 100}} />
+      
+      <div style={{marginTop: 20, padding: 20, background: '#f0f0f0', borderRadius: 10}}>
+        <h2>🔗 Blockchain Connection</h2>
+        <p>Connected: {isConnected ? '✅ Yes' : '❌ No'}</p>
+        <p>Listings: {stats.listings}</p>
+        {!isConnected && (
+          <button onClick={connect} style={{padding: '10px 20px', marginTop: 10}}>
+            Connect Wallet
+          </button>
         )}
-      </section>
+      </div>
+
+      <div style={{marginTop: 20, padding: 20, background: '#e0f0e0', borderRadius: 10}}>
+        <h2>📊 Backend Analytics (PostgreSQL)</h2>
+        <h3>Global Stats</h3>
+        <pre style={{background: '#fff', padding: 10, borderRadius: 5}}>
+          {JSON.stringify(backendStats, null, 2)}
+        </pre>
+        
+        <h3>Leaderboard</h3>
+        <pre style={{background: '#fff', padding: 10, borderRadius: 5}}>
+          {JSON.stringify(leaderboard, null, 2)}
+        </pre>
+      </div>
     </div>
   );
 }
