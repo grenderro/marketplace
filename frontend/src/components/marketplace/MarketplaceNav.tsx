@@ -1,60 +1,153 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Image as ImageIcon, Coins, ChevronDown } from 'lucide-react';
 
 export const MarketplaceNav: React.FC = () => {
-  const location = useLocation();
-  const isNFT = location.pathname.includes('/nfts');
-  const isESDT = location.pathname.includes('/esdt');
-
-  const NavDropdownItem = ({ href, icon, label }: { href: string; icon: string; label: string }) => (
-    <Link to={href} className="flex items-center gap-3 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-800 rounded-lg">
-      <span>{icon}</span>
-      <span>{label}</span>
-    </Link>
-  );
+  const currentPath = window.location.pathname;
 
   return (
-    <nav className="flex items-center gap-6">
-      {/* NFT Dropdown */}
-      <div className="relative group">
-        <Link
-          to="/marketplace/nfts"
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-            isNFT ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400 hover:text-white hover:bg-gray-800'
-          }`}
-        >
-          <ImageIcon size={20} />
-          <span>NFTs</span>
-          <ChevronDown size={16} className="opacity-50" />
-        </Link>
-        <div className="absolute top-full left-0 mt-2 w-56 bg-[#1a1a25] rounded-xl border border-gray-800 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-          <div className="p-2">
-            <NavDropdownItem href="/marketplace/nfts" icon="🔍" label="Explore NFTs" />
-            <NavDropdownItem href="/marketplace/nfts/collections" icon="🎨" label="Collections" />
-          </div>
-        </div>
-      </div>
+    <nav style={{ display: 'flex', alignItems: 'center', gap: '3rem' }}>
+      {/* Logo and Brand */}
+      <a href="/explore" style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        textDecoration: 'none'
+      }}>
+        {/* Logo Image from IPFS */}
+        <img 
+          src="https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeiegq45s2v4qixkghaz74ttknojllmw75wmb2wxl6bqyvyccfa2eve"
+          alt="Trad3E Logo"
+          style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '10px',
+            objectFit: 'cover',
+            boxShadow: '0 0 15px rgba(0, 212, 255, 0.4)'
+          }}
+        />
 
-      {/* ESDT Dropdown */}
-      <div className="relative group">
-        <Link
-          to="/marketplace/esdt"
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-            isESDT ? 'bg-green-500/20 text-green-400' : 'text-gray-400 hover:text-white hover:bg-gray-800'
-          }`}
+        {/* Brand Name */}
+        <span style={{
+          fontSize: '1.5rem',
+          fontWeight: '800',
+          background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
+          letterSpacing: '-0.02em'
+        }}>
+          Trad3E
+        </span>
+      </a>
+
+      {/* Navigation Links */}
+      <div style={{ display: 'flex', gap: '2rem' }}>
+        <a
+          href="/marketplace/nfts"
+          style={{
+            color: currentPath.includes('/nfts') ? '#00d4ff' : '#94a3b8',
+            textDecoration: 'none',
+            fontWeight: currentPath.includes('/nfts') ? '600' : '500',
+            fontSize: '1rem',
+            padding: '0.5rem 0',
+            position: 'relative',
+            transition: 'all 0.3s ease'
+          }}
         >
-          <Coins size={20} />
-          <span>Tokens</span>
-          <ChevronDown size={16} className="opacity-50" />
-        </Link>
-        <div className="absolute top-full left-0 mt-2 w-56 bg-[#1a1a25] rounded-xl border border-gray-800 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all">
-          <div className="p-2">
-            <NavDropdownItem href="/marketplace/esdt" icon="⚡" label="Swap Tokens" />
-            <NavDropdownItem href="/marketplace/esdt/tokens" icon="📊" label="Token Explorer" />
-          </div>
-        </div>
+          NFTs
+          {currentPath.includes('/nfts') && (
+            <span style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              height: '2px',
+              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
+              boxShadow: '0 0 10px #00d4ff'
+            }} />
+          )}
+        </a>
+
+        <a
+          href="/marketplace/esdt"
+          style={{
+            color: currentPath.includes('/esdt') ? '#00d4ff' : '#94a3b8',
+            textDecoration: 'none',
+            fontWeight: currentPath.includes('/esdt') ? '600' : '500',
+            fontSize: '1rem',
+            padding: '0.5rem 0',
+            position: 'relative',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          ESDT
+          {currentPath.includes('/esdt') && (
+            <span style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              height: '2px',
+              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
+              boxShadow: '0 0 10px #00d4ff'
+            }} />
+          )}
+        </a>
+
+        {/* Live Auctions - New Navigation Item */}
+        <a
+          href="/marketplace/auctions"
+          style={{
+            color: currentPath.includes('/auctions') ? '#00d4ff' : '#94a3b8',
+            textDecoration: 'none',
+            fontWeight: currentPath.includes('/auctions') ? '600' : '500',
+            fontSize: '1rem',
+            padding: '0.5rem 0',
+            position: 'relative',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          Live Auctions
+          {currentPath.includes('/auctions') && (
+            <span style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              height: '2px',
+              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
+              boxShadow: '0 0 10px #00d4ff'
+            }} />
+          )}
+        </a>
+
+        <a
+          href="/explore"
+          style={{
+            color: currentPath === '/explore' ? '#00d4ff' : '#94a3b8',
+            textDecoration: 'none',
+            fontWeight: currentPath === '/explore' ? '600' : '500',
+            fontSize: '1rem',
+            padding: '0.5rem 0',
+            position: 'relative',
+            transition: 'all 0.3s ease'
+          }}
+        >
+          Explore
+          {currentPath === '/explore' && (
+            <span style={{
+              position: 'absolute',
+              bottom: '0',
+              left: '0',
+              right: '0',
+              height: '2px',
+              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
+              boxShadow: '0 0 10px #00d4ff'
+            }} />
+          )}
+        </a>
       </div>
     </nav>
   );
 };
+
+export default MarketplaceNav;

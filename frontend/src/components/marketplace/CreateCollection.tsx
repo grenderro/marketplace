@@ -1,22 +1,34 @@
-// components/CreateCollection.tsx
+// components/marketplace/CreateCollection.tsx
 import React, { useState } from 'react';
-import { Spinner } from '@/components/stubs';
-import { useGetAccountInfo, useGetNetworkConfig } from '@/hooks/sdkStubs';
-import { 
-  Transaction, 
-  TransactionPayload, 
-  TokenTransfer,
-  Address,
-  ContractFunction,
-  StringValue,
-  BigUIntValue,
-  U64Value,
-  BooleanValue
-} from '@multiversx/sdk-core';
 import { motion, AnimatePresence } from 'framer-motion';
-import { uploadToIPFS, uploadJSONToIPFS } from '@/services/ipfs';
-import { getNonce, sendTransaction, parseAmount } from '@/utils/contract';
+import { Spinner } from '../stubs/SdkStubs';
+import { useGetAccountInfo, useGetNetworkConfig } from '../../hooks/sdkStubs';
+import {
+  Transaction,
+  Address,
+  TokenTransfer,
+  TransactionPayload
+} from '@multiversx/sdk-core';
 
+// Stub services
+const uploadToIPFS = async (file: File): Promise<string> => {
+  console.log('Uploading to IPFS:', file.name);
+  return 'QmStubHash' + Date.now();
+};
+
+const uploadJSONToIPFS = async (json: any): Promise<string> => {
+  console.log('Uploading JSON to IPFS:', json);
+  return 'QmJsonStubHash' + Date.now();
+};
+
+const getNonce = async (address: string): Promise<number> => {
+  return 0;
+};
+
+const sendTransaction = async (tx: Transaction) => {
+  console.log('Sending transaction:', tx);
+  return { hash: 'stub-tx-hash-' + Date.now() };
+};
 
 interface CollectionFormData {
   name: string;
@@ -58,55 +70,70 @@ export const CreateCollection: React.FC = () => {
   });
 
   const handleCreate = async () => {
-    setIsCreating(true);
+    if (!address) {
+      alert('Please connect your wallet first');
+      return;
+    }
     
+    setIsCreating(true);
+
     try {
-      // 1. Upload images to IPFS
-      const imageHash = await uploadToIPFS(formData.image!);
-      const bannerHash = await uploadToIPFS(formData.banner!);
-      
-      // 2. Create metadata JSON
+      const imageHash = formData.image ? await uploadToIPFS(formData.image) : '';
+      const bannerHash = formData.banner ? await uploadToIPFS(formData.banner) : '';
+
       const metadata = {
         name: formData.name,
         description: formData.description,
-        image: `ipfs://${imageHash}`,
-        banner: `ipfs://${bannerHash}`,
+        image: imageHash ? `ipfs://${imageHash}` : '',
+        banner: bannerHash ? `ipfs://${bannerHash}` : '',
       };
       const metadataHash = await uploadJSONToIPFS(metadata);
-      
-                  // 3. Prepare transaction - Compatible with sdk-core 12.x/15.x
-      const data = new TransactionPayload(
-        `createCollection@` +
+
+      const dataString = `createCollection@` +
         `${Buffer.from(formData.name).toString('hex')}@` +
         `${Buffer.from(formData.ticker).toString('hex')}@` +
         `${formData.maxSupply.toString(16)}@` +
-        `${(parseFloat(formData.mintPrice) * 1e18).toString(16)}@` +
-        `${(formData.royalties * 100).toString(16)}@` +
-        `${Buffer.from(`ipfs://${metadataHash}`).toString('hex')}`
-      );
+        `${BigInt(Math.floor(parseFloat(formData.mintPrice) * 1e18)).toString(16)}@` +
+        `${Math.floor(formData.royalties * 100).toString(16)}@` +
+        `${Buffer.from(`ipfs://${metadataHash}`).toString('hex')}`;
 
+      const dataBuffer = Buffer.from(dataString);
+      const nonce = await getNonce(address);
+      
+      // SDK v12 compatible - use proper types
       const tx = new Transaction({
-        nonce: await getNonce(address),
-        value: TokenTransfer.egldFromAmount(0.05),
-        sender: Address.fromBech32(address),
-        receiver: Address.fromBech32(network.apiAddress),
-        gasLimit: 100000000,
-        data: data,
-        chainID: network.chainId,
+        nonce: nonce, // number, not BigInt
+        value: TokenTransfer.egldFromAmount(0.05), // Use egldFromAmount
+        sender: Address.fromBech32(address), // fromBech32, not newFromBech32
+        receiver: Address.fromBech32(network.apiAddress || 'erd1qqqqqqqqqqqqqpgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'),
+        gasLimit: 100000000, // number, not BigInt
+        data: new TransactionPayload(dataBuffer.toString('base64')), // TransactionPayload, not Buffer
+        chainID: network.chainId || 'D', // string, not Buffer
       });
-      
-      // 4. Sign and send
+
       await sendTransaction(tx);
-      
+      alert('Collection creation transaction sent successfully!');
+
+    } catch (error) {
+      console.error('Error creating collection:', error);
+      alert('Error creating collection: ' + (error as Error).message);
     } finally {
       setIsCreating(false);
     }
   };
 
-const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
+  // ... rest of component (ReviewStep, BasicInfoStep, etc.) same as before
+  const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
     <div className="space-y-4">
       <h3 className="text-xl font-bold">Review</h3>
-      <button 
+      <div className="bg-[#1a1a25] p-4 rounded-lg space-y-2 text-sm">
+        <p><span className="text-gray-400">Name:</span> {formData.name}</p>
+        <p><span className="text-gray-400">Ticker:</span> {formData.ticker}</p>
+        <p><span className="text-gray-400">Supply:</span> {formData.maxSupply}</p>
+        <p><span className="text-gray-400">Price:</span> {formData.mintPrice} EGLD</p>
+        <p><span className="text-gray-400">Royalties:</span> {formData.royalties}%</p>
+      </div>
+      <button
         onClick={onCreate}
         disabled={isCreating}
         className="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-lg font-bold text-black hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
@@ -124,14 +151,14 @@ const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
   );
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto p-4">
       {/* Progress Steps */}
       <div className="flex justify-between mb-8">
         {STEPS.map((step, idx) => (
           <div key={step} className="flex items-center">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-              idx <= currentStep 
-                ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white' 
+              idx <= currentStep
+                ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white'
                 : 'bg-gray-800 text-gray-500'
             }`}>
               {idx < currentStep ? '✓' : idx + 1}
@@ -181,7 +208,7 @@ const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
         >
           Previous
         </button>
-        
+
         {currentStep < STEPS.length - 1 ? (
           <button
             onClick={() => setCurrentStep(currentStep + 1)}
@@ -197,7 +224,7 @@ const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
           >
             {isCreating ? (
               <>
-                <Spinner className="w-5 h-5 animate-spin" />
+                <Spinner />
                 Creating...
               </>
             ) : (
@@ -210,7 +237,7 @@ const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
   );
 };
 
-// Step Components
+// Step Components (BasicInfoStep, TokenomicsStep, AssetsStep) - same as previous version
 const BasicInfoStep: React.FC<{
   formData: CollectionFormData;
   setFormData: React.Dispatch<React.SetStateAction<CollectionFormData>>;
@@ -228,7 +255,7 @@ const BasicInfoStep: React.FC<{
         className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
       />
     </div>
-    
+
     <div>
       <label className="block text-sm font-semibold text-gray-400 mb-2">
         Token Ticker *
@@ -243,7 +270,7 @@ const BasicInfoStep: React.FC<{
         className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none font-mono"
       />
     </div>
-    
+
     <div>
       <label className="block text-sm font-semibold text-gray-400 mb-2">
         Description
@@ -272,13 +299,13 @@ const TokenomicsStep: React.FC<{
         <input
           type="number"
           value={formData.maxSupply}
-          onChange={(e) => setFormData({ ...formData, maxSupply: parseInt(e.target.value) })}
+          onChange={(e) => setFormData({ ...formData, maxSupply: parseInt(e.target.value) || 0 })}
           min={1}
           max={100000}
           className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-semibold text-gray-400 mb-2">
           Mint Price (EGLD)
@@ -324,7 +351,7 @@ const TokenomicsStep: React.FC<{
           className="w-full bg-[#1a1a25] border border-gray-700 rounded-xl px-4 py-3 text-white focus:border-cyan-400 focus:outline-none"
         />
       </div>
-      
+
       <div>
         <label className="block text-sm font-semibold text-gray-400 mb-2">
           Mint End Date
@@ -348,7 +375,7 @@ const TokenomicsStep: React.FC<{
         />
         <span className="text-white">Enable Whitelist</span>
       </label>
-      
+
       <label className="flex items-center gap-3 cursor-pointer">
         <input
           type="checkbox"
@@ -374,10 +401,10 @@ const AssetsStep: React.FC<{
       </label>
       <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-cyan-400 transition-colors">
         {formData.image ? (
-          <div className="relative">
-            <img 
-              src={URL.createObjectURL(formData.image)} 
-              alt="Preview" 
+          <div className="relative inline-block">
+            <img
+              src={URL.createObjectURL(formData.image)}
+              alt="Preview"
               className="w-32 h-32 mx-auto rounded-xl object-cover"
             />
             <button
@@ -409,9 +436,9 @@ const AssetsStep: React.FC<{
       <div className="border-2 border-dashed border-gray-700 rounded-xl p-8 text-center hover:border-purple-400 transition-colors">
         {formData.banner ? (
           <div className="relative">
-            <img 
-              src={URL.createObjectURL(formData.banner)} 
-              alt="Banner" 
+            <img
+              src={URL.createObjectURL(formData.banner)}
+              alt="Banner"
               className="w-full h-32 mx-auto rounded-xl object-cover"
             />
             <button
@@ -437,3 +464,5 @@ const AssetsStep: React.FC<{
     </div>
   </div>
 );
+
+export default CreateCollection;

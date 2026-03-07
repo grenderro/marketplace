@@ -5,10 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Upgrade:                              1
-// Endpoints:                           13
+// Endpoints:                            8
 // Async Callback (empty):               1
-// Total number of exported functions:  16
+// Total number of exported functions:  10
 
 #![no_std]
 
@@ -19,20 +18,14 @@ multiversx_sc_wasm_adapter::endpoints! {
     marketplace
     (
         init => init
-        upgrade => upgrade
-        getListing => get_listing
         createListing => create_listing
         buyListing => buy_listing
         cancelListing => cancel_listing
-        setRoyaltiesPercentage => set_royalties_percentage
-        setRoyaltiesClaimAddress => set_royalties_claim_address
         createAuction => create_auction
-        createOffer => create_offer
-        acceptOffer => accept_offer
-        cancelOffer => cancel_offer
-        batchBuy => batch_buy
-        pause => pause
-        unpause => unpause
+        placeBid => place_bid
+        endAuction => end_auction
+        getListing => get_listing
+        getAuction => get_auction
     )
 }
 

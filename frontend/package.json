@@ -4,11 +4,12 @@
   "private": true,
   "dependencies": {
     "@multiversx/sdk-core": "^12.19.3",
-    "@multiversx/sdk-dapp": "^5.6.17",
+    "@multiversx/sdk-dapp": "^2.28.0",
     "@multiversx/sdk-wallet": "^4.6.0",
     "@tanstack/react-query": "^5.90.21",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.13.5",
+    "bignumber.js": "^10.0.2",
     "buffer": "^6.0.3",
     "chart.js": "^4.5.1",
     "crypto-browserify": "^3.12.1",
@@ -21,6 +22,7 @@
     "react-intersection-observer": "^10.0.3",
     "react-router-dom": "^7.13.1",
     "react-scripts": "^5.0.1",
+    "react-toastify": "^11.0.5",
     "stream-browserify": "^3.0.0",
     "web-vitals": "^2.1.4"
   },

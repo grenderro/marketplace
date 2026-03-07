@@ -4,7 +4,8 @@
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
 
-#[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode, Clone)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, Clone)]
 pub struct Listing<M: ManagedTypeApi> {
     pub listing_id: u64,
     pub seller: ManagedAddress<M>,
@@ -17,7 +18,8 @@ pub struct Listing<M: ManagedTypeApi> {
     pub active: bool,
 }
 
-#[derive(TypeAbi, TopEncode, TopDecode, NestedEncode, NestedDecode, Clone)]
+#[type_abi]
+#[derive(TopEncode, TopDecode, NestedEncode, NestedDecode, Clone)]
 pub struct Auction<M: ManagedTypeApi> {
     pub auction_id: u64,
     pub seller: ManagedAddress<M>,
@@ -26,7 +28,7 @@ pub struct Auction<M: ManagedTypeApi> {
     pub amount: BigUint<M>,
     pub min_bid: BigUint<M>,
     pub highest_bid: BigUint<M>,
-    pub highest_bidder: OptionalValue<ManagedAddress<M>>,
+    pub highest_bidder: Option<ManagedAddress<M>>,
     pub end_time: u64,
     pub payment_token: TokenIdentifier<M>,
     pub active: bool,
@@ -37,7 +39,7 @@ pub trait Marketplace {
     #[init]
     fn init(
         &self,
-        fee_percent: u64,           // 250 = 2.5%
+        fee_percent: u64,
         fee_address: ManagedAddress,
     ) {
         require!(fee_percent <= 1000, "Max 10% fee");
@@ -47,8 +49,6 @@ pub trait Marketplace {
         self.auction_id().set(0);
     }
 
-    // ========== LISTINGS ==========
-    
     #[payable("*")]
     #[endpoint(createListing)]
     fn create_listing(
@@ -58,22 +58,22 @@ pub trait Marketplace {
     ) -> u64 {
         let payment = self.call_value().single_esdt();
         let caller = self.blockchain().get_caller();
-        
+
         let id = self.listing_id().get() + 1;
         self.listing_id().set(id);
-        
+
         self.listings(id).set(Listing {
             listing_id: id,
             seller: caller,
-            token_id: payment.token_identifier,
+            token_id: payment.token_identifier.clone(),
             token_nonce: payment.token_nonce,
-            amount: payment.amount,
+            amount: payment.amount.clone(),
             price_token,
             price_amount,
             created_at: self.blockchain().get_block_timestamp(),
             active: true,
         });
-        
+
         id
     }
 
@@ -82,26 +82,23 @@ pub trait Marketplace {
     fn buy_listing(&self, listing_id: u64) {
         let payment = self.call_value().single_esdt();
         let buyer = self.blockchain().get_caller();
-        
+
         let listing = self.listings(listing_id).get();
         require!(listing.active, "Not active");
         require!(listing.seller != buyer, "Can't buy own");
         require!(payment.token_identifier == listing.price_token, "Wrong token");
         require!(payment.amount >= listing.price_amount, "Insufficient");
-        
-        // Calculate fees
+
         let fee = &listing.price_amount * self.fee_percent().get() / 10000u64;
         let seller_amount = &listing.price_amount - &fee;
-        
-        // Pay seller
+
         self.send().direct_esdt(
             &listing.seller,
             &listing.price_token,
             0,
             &seller_amount,
         );
-        
-        // Pay fee
+
         if fee > 0 {
             self.send().direct_esdt(
                 &self.fee_address().get(),
@@ -110,22 +107,19 @@ pub trait Marketplace {
                 &fee,
             );
         }
-        
-        // Transfer NFT
+
         self.send().direct_esdt(
             &buyer,
             &listing.token_id,
             listing.token_nonce,
             &listing.amount,
         );
-        
-        // Refund excess
+
         if payment.amount > listing.price_amount {
-            let excess = payment.amount - &listing.price_amount;
+            let excess = payment.amount.clone() - &listing.price_amount;
             self.send().direct_esdt(&buyer, &payment.token_identifier, 0, &excess);
         }
-        
-        // Update listing
+
         self.listings(listing_id).update(|l| l.active = false);
     }
 
@@ -133,23 +127,20 @@ pub trait Marketplace {
     fn cancel_listing(&self, listing_id: u64) {
         let caller = self.blockchain().get_caller();
         let listing = self.listings(listing_id).get();
-        
+
         require!(listing.seller == caller, "Not seller");
         require!(listing.active, "Not active");
-        
-        // Return NFT
+
         self.send().direct_esdt(
             &caller,
             &listing.token_id,
             listing.token_nonce,
             &listing.amount,
         );
-        
+
         self.listings(listing_id).update(|l| l.active = false);
     }
 
-    // ========== AUCTIONS ==========
-    
     #[payable("*")]
     #[endpoint(createAuction)]
     fn create_auction(
@@ -161,24 +152,24 @@ pub trait Marketplace {
         let payment = self.call_value().single_esdt();
         let caller = self.blockchain().get_caller();
         let end_time = self.blockchain().get_block_timestamp() + duration_seconds;
-        
+
         let id = self.auction_id().get() + 1;
         self.auction_id().set(id);
-        
+
         self.auctions(id).set(Auction {
             auction_id: id,
             seller: caller,
-            token_id: payment.token_identifier,
+            token_id: payment.token_identifier.clone(),
             token_nonce: payment.token_nonce,
-            amount: payment.amount,
+            amount: payment.amount.clone(),
             min_bid,
             highest_bid: BigUint::zero(),
-            highest_bidder: OptionalValue::None,
+            highest_bidder: None,
             end_time,
             payment_token,
             active: true,
         });
-        
+
         id
     }
 
@@ -188,33 +179,32 @@ pub trait Marketplace {
         let payment = self.call_value().single_esdt();
         let bidder = self.blockchain().get_caller();
         let current_time = self.blockchain().get_block_timestamp();
-        
+
         let mut auction = self.auctions(auction_id).get();
         require!(auction.active, "Not active");
         require!(current_time < auction.end_time, "Ended");
         require!(auction.seller != bidder, "Can't bid own");
         require!(payment.token_identifier == auction.payment_token, "Wrong token");
-        
+
         let min_bid = if auction.highest_bid > 0 {
-            &auction.highest_bid + (&auction.highest_bid / 10u64) // +10%
+            &auction.highest_bid + (&auction.highest_bid / 10u64)
         } else {
             auction.min_bid.clone()
         };
-        
+
         require!(payment.amount >= min_bid, "Bid too low");
-        
-        // Refund previous bidder
-        if let OptionalValue::Some(prev) = auction.highest_bidder {
+
+        if let Some(prev) = &auction.highest_bidder {
             self.send().direct_esdt(
-                &prev,
+                prev,
                 &auction.payment_token,
                 0,
                 &auction.highest_bid,
             );
         }
-        
-        auction.highest_bid = payment.amount;
-        auction.highest_bidder = OptionalValue::Some(bidder);
+
+        auction.highest_bid = payment.amount.clone();
+        auction.highest_bidder = Some(bidder);
         self.auctions(auction_id).set(auction);
     }
 
@@ -222,22 +212,21 @@ pub trait Marketplace {
     fn end_auction(&self, auction_id: u64) {
         let current_time = self.blockchain().get_block_timestamp();
         let auction = self.auctions(auction_id).get();
-        
+
         require!(auction.active, "Not active");
         require!(current_time >= auction.end_time, "Not ended");
-        
-        if let OptionalValue::Some(winner) = auction.highest_bidder {
-            // Pay seller minus fee
+
+        if let Some(winner) = &auction.highest_bidder {
             let fee = &auction.highest_bid * self.fee_percent().get() / 10000u64;
             let seller_amount = &auction.highest_bid - &fee;
-            
+
             self.send().direct_esdt(
                 &auction.seller,
                 &auction.payment_token,
                 0,
                 &seller_amount,
             );
-            
+
             if fee > 0 {
                 self.send().direct_esdt(
                     &self.fee_address().get(),
@@ -246,16 +235,14 @@ pub trait Marketplace {
                     &fee,
                 );
             }
-            
-            // Transfer NFT
+
             self.send().direct_esdt(
-                &winner,
+                winner,
                 &auction.token_id,
                 auction.token_nonce,
                 &auction.amount,
             );
         } else {
-            // No bids, return to seller
             self.send().direct_esdt(
                 &auction.seller,
                 &auction.token_id,
@@ -263,12 +250,10 @@ pub trait Marketplace {
                 &auction.amount,
             );
         }
-        
+
         self.auctions(auction_id).update(|a| a.active = false);
     }
 
-    // ========== VIEWS ==========
-    
     #[view(getListing)]
     fn get_listing(&self, id: u64) -> Listing<Self::Api> {
         self.listings(id).get()
@@ -279,8 +264,6 @@ pub trait Marketplace {
         self.auctions(id).get()
     }
 
-    // ========== STORAGE ==========
-    
     #[storage_mapper("fee_percent")]
     fn fee_percent(&self) -> SingleValueMapper<u64>;
 

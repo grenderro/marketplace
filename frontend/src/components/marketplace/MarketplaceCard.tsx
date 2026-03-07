@@ -1,8 +1,8 @@
-// components/MarketplaceCard.tsx
+// components/marketplace/MarketplaceCard.tsx
 import React, { useState } from 'react';
 import { useGetAccountInfo, useGetNetworkConfig } from '../../hooks/sdkStubs';
-import { ContractFunction, Transaction, TransactionPayload } from '@multiversx/sdk-core';
-import { formatAmount, formatDate } from '@/utils/format';
+import { ContractFunction, Transaction } from '@multiversx/sdk-core';
+import { formatAmount, formatDate } from '../../utils/format';
 
 interface AssetCardProps {
   type: 'listing' | 'auction';
@@ -48,8 +48,8 @@ export const AssetCard: React.FC<AssetCardProps> = ({
       <div className="bg-[#1a1a25] rounded-xl overflow-hidden hover:bg-[#252535] transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,212,255,0.15)]">
         {/* Image Container */}
         <div className="relative aspect-square overflow-hidden">
-          <img 
-            src={imageUrl} 
+          <img
+            src={imageUrl}
             alt={name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
@@ -88,7 +88,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
                   </span>
                 </div>
               )}
-              
+
               {!isSeller && !isEnded && (
                 <div className="flex gap-2">
                   <input
@@ -115,7 +115,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
                   {formatAmount(price || '0')} {priceToken}
                 </span>
               </div>
-              
+
               {!isSeller && (
                 <button
                   onClick={() => onAction()}
@@ -140,3 +140,7 @@ export const AssetCard: React.FC<AssetCardProps> = ({
     </div>
   );
 };
+
+// Also export as MarketplaceCard for compatibility
+export const MarketplaceCard = AssetCard;
+export default AssetCard;

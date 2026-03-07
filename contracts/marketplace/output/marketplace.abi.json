@@ -13,36 +13,17 @@
     "constructor": {
         "inputs": [
             {
-                "name": "royalties_percentage",
+                "name": "fee_percent",
                 "type": "u64"
             },
             {
-                "name": "royalties_address",
+                "name": "fee_address",
                 "type": "Address"
             }
         ],
         "outputs": []
     },
-    "upgradeConstructor": {
-        "inputs": [],
-        "outputs": []
-    },
     "endpoints": [
-        {
-            "name": "getListing",
-            "mutability": "readonly",
-            "inputs": [
-                {
-                    "name": "listing_id",
-                    "type": "u64"
-                }
-            ],
-            "outputs": [
-                {
-                    "type": "Listing"
-                }
-            ]
-        },
         {
             "name": "createListing",
             "mutability": "mutable",
@@ -51,15 +32,11 @@
             ],
             "inputs": [
                 {
-                    "name": "nft_token_id",
+                    "name": "price_token",
                     "type": "TokenIdentifier"
                 },
                 {
-                    "name": "nft_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "price",
+                    "name": "price_amount",
                     "type": "BigUint"
                 }
             ],
@@ -95,28 +72,6 @@
             "outputs": []
         },
         {
-            "name": "setRoyaltiesPercentage",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "percentage",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "setRoyaltiesClaimAddress",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "address",
-                    "type": "Address"
-                }
-            ],
-            "outputs": []
-        },
-        {
             "name": "createAuction",
             "mutability": "mutable",
             "payableInTokens": [
@@ -124,47 +79,16 @@
             ],
             "inputs": [
                 {
-                    "name": "nft_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "nft_nonce",
-                    "type": "u64"
-                },
-                {
                     "name": "min_bid",
                     "type": "BigUint"
                 },
                 {
-                    "name": "end_time",
+                    "name": "duration_seconds",
                     "type": "u64"
-                }
-            ],
-            "outputs": [
+                },
                 {
-                    "type": "u64"
-                }
-            ]
-        },
-        {
-            "name": "createOffer",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "nft_token_id",
+                    "name": "payment_token",
                     "type": "TokenIdentifier"
-                },
-                {
-                    "name": "nft_nonce",
-                    "type": "u64"
-                },
-                {
-                    "name": "token_wanted",
-                    "type": "OfferPayment"
-                },
-                {
-                    "name": "expiry",
-                    "type": "u64"
                 }
             ],
             "outputs": [
@@ -174,203 +98,57 @@
             ]
         },
         {
-            "name": "acceptOffer",
+            "name": "placeBid",
             "mutability": "mutable",
             "payableInTokens": [
                 "*"
             ],
-            "inputs": [
-                {
-                    "name": "offer_id",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "cancelOffer",
-            "mutability": "mutable",
-            "inputs": [
-                {
-                    "name": "offer_id",
-                    "type": "u64"
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "batchBuy",
-            "mutability": "mutable",
-            "payableInTokens": [
-                "*"
-            ],
-            "inputs": [
-                {
-                    "name": "listing_ids",
-                    "type": "variadic<u64>",
-                    "multi_arg": true
-                }
-            ],
-            "outputs": []
-        },
-        {
-            "name": "pause",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        },
-        {
-            "name": "unpause",
-            "onlyOwner": true,
-            "mutability": "mutable",
-            "inputs": [],
-            "outputs": []
-        }
-    ],
-    "events": [
-        {
-            "identifier": "listing_created",
-            "inputs": [
-                {
-                    "name": "listing_id",
-                    "type": "u64",
-                    "indexed": true
-                },
-                {
-                    "name": "seller",
-                    "type": "Address",
-                    "indexed": true
-                },
-                {
-                    "name": "nft_token_id",
-                    "type": "TokenIdentifier",
-                    "indexed": true
-                },
-                {
-                    "name": "nft_nonce",
-                    "type": "u64",
-                    "indexed": true
-                },
-                {
-                    "name": "price",
-                    "type": "BigUint",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "listing_sold",
-            "inputs": [
-                {
-                    "name": "listing_id",
-                    "type": "u64",
-                    "indexed": true
-                },
-                {
-                    "name": "buyer",
-                    "type": "Address",
-                    "indexed": true
-                },
-                {
-                    "name": "seller",
-                    "type": "Address",
-                    "indexed": true
-                },
-                {
-                    "name": "price",
-                    "type": "BigUint",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "offer_created",
-            "inputs": [
-                {
-                    "name": "offer_id",
-                    "type": "u64",
-                    "indexed": true
-                },
-                {
-                    "name": "creator",
-                    "type": "Address",
-                    "indexed": true
-                },
-                {
-                    "name": "nft_token_id",
-                    "type": "TokenIdentifier",
-                    "indexed": true
-                },
-                {
-                    "name": "nft_nonce",
-                    "type": "u64",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "offer_accepted",
-            "inputs": [
-                {
-                    "name": "offer_id",
-                    "type": "u64",
-                    "indexed": true
-                },
-                {
-                    "name": "acceptor",
-                    "type": "Address",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "royalties_paid",
-            "inputs": [
-                {
-                    "name": "recipient",
-                    "type": "Address",
-                    "indexed": true
-                },
-                {
-                    "name": "amount",
-                    "type": "BigUint",
-                    "indexed": true
-                },
-                {
-                    "name": "token_identifier",
-                    "type": "EgldOrEsdtTokenIdentifier",
-                    "indexed": true
-                }
-            ]
-        },
-        {
-            "identifier": "auction_created",
             "inputs": [
                 {
                     "name": "auction_id",
-                    "type": "u64",
-                    "indexed": true
-                },
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "endAuction",
+            "mutability": "mutable",
+            "inputs": [
                 {
-                    "name": "creator",
-                    "type": "Address",
-                    "indexed": true
-                },
+                    "name": "auction_id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": []
+        },
+        {
+            "name": "getListing",
+            "mutability": "readonly",
+            "inputs": [
                 {
-                    "name": "nft_token_id",
-                    "type": "TokenIdentifier",
-                    "indexed": true
-                },
+                    "name": "id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
                 {
-                    "name": "min_bid",
-                    "type": "BigUint",
-                    "indexed": true
-                },
+                    "type": "Listing"
+                }
+            ]
+        },
+        {
+            "name": "getAuction",
+            "mutability": "readonly",
+            "inputs": [
                 {
-                    "name": "end_time",
-                    "type": "u64",
-                    "indexed": true
+                    "name": "id",
+                    "type": "u64"
+                }
+            ],
+            "outputs": [
+                {
+                    "type": "Auction"
                 }
             ]
         }
@@ -378,54 +156,20 @@
     "esdtAttributes": [],
     "hasCallback": false,
     "types": {
-        "Listing": {
+        "Auction": {
             "type": "struct",
             "fields": [
                 {
-                    "name": "owner",
-                    "type": "Address"
-                },
-                {
-                    "name": "nft_token_id",
-                    "type": "TokenIdentifier"
-                },
-                {
-                    "name": "nft_nonce",
+                    "name": "auction_id",
                     "type": "u64"
                 },
                 {
-                    "name": "price",
-                    "type": "BigUint"
+                    "name": "seller",
+                    "type": "Address"
                 },
                 {
-                    "name": "status",
-                    "type": "ListingStatus"
-                }
-            ]
-        },
-        "ListingStatus": {
-            "type": "enum",
-            "variants": [
-                {
-                    "name": "Active",
-                    "discriminant": 0
-                },
-                {
-                    "name": "Sold",
-                    "discriminant": 1
-                },
-                {
-                    "name": "Cancelled",
-                    "discriminant": 2
-                }
-            ]
-        },
-        "OfferPayment": {
-            "type": "struct",
-            "fields": [
-                {
-                    "name": "token_identifier",
-                    "type": "EgldOrEsdtTokenIdentifier"
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
                 },
                 {
                     "name": "token_nonce",
@@ -434,6 +178,71 @@
                 {
                     "name": "amount",
                     "type": "BigUint"
+                },
+                {
+                    "name": "min_bid",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "highest_bid",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "highest_bidder",
+                    "type": "Option<Address>"
+                },
+                {
+                    "name": "end_time",
+                    "type": "u64"
+                },
+                {
+                    "name": "payment_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "active",
+                    "type": "bool"
+                }
+            ]
+        },
+        "Listing": {
+            "type": "struct",
+            "fields": [
+                {
+                    "name": "listing_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "seller",
+                    "type": "Address"
+                },
+                {
+                    "name": "token_id",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "token_nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "price_token",
+                    "type": "TokenIdentifier"
+                },
+                {
+                    "name": "price_amount",
+                    "type": "BigUint"
+                },
+                {
+                    "name": "created_at",
+                    "type": "u64"
+                },
+                {
+                    "name": "active",
+                    "type": "bool"
                 }
             ]
         }

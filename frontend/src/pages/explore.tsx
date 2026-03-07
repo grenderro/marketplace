@@ -3,19 +3,20 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useInView } from 'react-intersection-observer';
-import { 
-  NFTGrid, 
-  FilterSidebar, 
-  CollectionMarquee, 
-  SearchBar, 
-  SortDropdown, 
-  ViewToggle, 
-  StatsBar, 
-  ActiveFilters, 
-  LoadingSkeleton, 
-  ErrorState, 
-  Spinner 
-} from '@/components/stubs';
+import {
+  useSdk,
+  CollectionMarquee,
+  SearchBar,
+  StatsBar,
+  FilterSidebar,
+  ActiveFilters,
+  SortDropdown,
+  ViewToggle,
+  LoadingSkeleton,
+  ErrorState,
+  NFTGrid,
+  Spinner
+} from '../components/stubs/SdkStubs';
 
 interface Listing {
   id: string;
@@ -50,6 +51,7 @@ export default function ExplorePage() {
   });
   const [searchQuery, setSearchQuery] = useState('');
   const { ref, inView } = useInView();
+  const { isAuthenticated } = useSdk();
 
   const {
     data,
@@ -60,19 +62,22 @@ export default function ExplorePage() {
   } = useInfiniteQuery({
     queryKey: ['listings', filters, searchQuery],
     queryFn: async ({ pageParam = 1 }) => {
-      const params = new URLSearchParams({
-        page: String(pageParam),
-        limit: '24',
-        sortBy: filters.sortBy,
-        ...(filters.collection && { collection: filters.collection }),
-        ...(filters.minPrice && { minPrice: filters.minPrice }),
-        ...(filters.maxPrice && { maxPrice: filters.maxPrice }),
-        ...(filters.type !== 'all' && { type: filters.type }),
-        ...(searchQuery && { search: searchQuery }),
-      });
-
-      const res = await fetch(`/api/listings?${params}`);
-      return res.json();
+      // For now, return mock data since API might not be ready
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return {
+        data: {
+          listings: Array(8).fill(null).map((_, i) => ({
+            id: `item-${pageParam}-${i}`,
+            name: `Awesome NFT #${(pageParam - 1) * 8 + i + 1}`,
+            price: `${(0.1 + i * 0.05).toFixed(2)}`,
+            image: '',
+            collection: 'Cool Collection',
+            seller: 'erd1...seller'
+          })),
+          hasMore: pageParam < 3,
+          collections: []
+        }
+      };
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage: any, pages) => {
@@ -87,46 +92,105 @@ export default function ExplorePage() {
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const allListings = data?.pages.flatMap((page: any) => page?.data?.listings || []) || [];
-  const collections = data?.pages[0]?.data?.collections || [];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
-      {/* Collection Marquee */}
-      <CollectionMarquee />
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div style={{ 
+        padding: '3rem 0', 
+        textAlign: 'center',
+        borderBottom: '1px solid var(--border-color)',
+        marginBottom: '2rem'
+      }}>
+        <motion.h1 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ fontSize: '3rem', fontWeight: '800', marginBottom: '1rem' }}
+        >
+          Discover <span className="gradient-text">Extraordinary</span> NFTs
+        </motion.h1>
+        <motion.p 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          style={{ color: 'var(--text-secondary)', fontSize: '1.1rem', maxWidth: '600px', margin: '0 auto' }}
+        >
+          Buy, sell, and auction unique digital assets on the most advanced marketplace in the MultiversX ecosystem.
+        </motion.p>
+        
+        {!isAuthenticated && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            style={{ 
+              marginTop: '1.5rem',
+              padding: '1rem 1.5rem',
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '12px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#f59e0b'
+            }}
+          >
+            <span>⚠️</span>
+            <span>Connect your wallet to buy, sell, and create NFT listings</span>
+          </motion.div>
+        )}
+      </div>
 
-      <div className="container mx-auto px-4 py-8">
+      {/* Collection Marquee */}
+      <div style={{ marginBottom: '2rem' }}>
+        <CollectionMarquee />
+      </div>
+
+      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 2rem 2rem' }}>
         {/* Search and Stats */}
-        <div className="mb-8 space-y-4">
+        <div style={{ marginBottom: '2rem' }}>
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
           <StatsBar />
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Filters */}
-          <aside className="lg:w-64 flex-shrink-0">
-            <FilterSidebar 
-              filters={filters} 
+        <div style={{ display: 'flex', gap: '2rem', flexDirection: 'row' }}>
+          {/* Sidebar Filters - Sticky */}
+          <aside className="sidebar" style={{ width: '280px', flexShrink: 0 }}>
+            <FilterSidebar
+              filters={filters}
               onChange={setFilters}
             />
           </aside>
 
           {/* Main Content */}
-          <div className="flex-1">
+          <div style={{ flex: 1, minWidth: 0 }}>
             {/* Toolbar */}
-            <div className="flex items-center justify-between mb-6">
-              <ActiveFilters 
-                filters={filters} 
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '1.5rem',
+              padding: '1rem',
+              background: 'var(--bg-card)',
+              borderRadius: '12px',
+              border: '1px solid var(--border-color)'
+            }}>
+              <ActiveFilters
+                filters={filters}
                 onClear={() => setFilters({
                   sortBy: 'recent',
                   type: 'all',
                   minPrice: '',
                   maxPrice: '',
                   collection: '',
-                })} 
+                })}
               />
-              
-              <div className="flex items-center gap-4">
-                <SortDropdown 
+
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                  {allListings.length} items
+                </span>
+                <SortDropdown
                   value={filters.sortBy}
                   onChange={(sortBy: string) => setFilters({ ...filters, sortBy })}
                   options={[
@@ -140,33 +204,70 @@ export default function ExplorePage() {
             </div>
 
             {/* NFT Grid */}
-            {status === 'pending' ? (
-              <LoadingSkeleton />
-            ) : status === 'error' ? (
-              <ErrorState onRetry={() => window.location.reload()} />
-            ) : (
-              <>
-                <NFTGrid 
-                  listings={allListings}
-                  viewMode={viewMode}
-                  onBuy={handleBuy}
-                />
-                
-                {/* Infinite Scroll Trigger */}
-                <div ref={ref} className="mt-8 text-center py-4">
-                  {isFetchingNextPage ? (
-                    <div className="inline-flex items-center gap-2 text-cyan-400">
-                      <Spinner className="w-5 h-5 animate-spin" />
-                      Loading more...
-                    </div>
-                  ) : hasNextPage ? (
-                    <span className="text-gray-500">Scroll for more</span>
-                  ) : (
-                    <span className="text-gray-600">No more items</span>
-                  )}
-                </div>
-              </>
-            )}
+            <AnimatePresence mode="wait">
+              {status === 'pending' ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <LoadingSkeleton />
+                </motion.div>
+              ) : status === 'error' ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <ErrorState onRetry={() => window.location.reload()} />
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <NFTGrid
+                    listings={allListings}
+                    viewMode={viewMode}
+                    onBuy={handleBuy}
+                    isAuthenticated={isAuthenticated}
+                  />
+
+                  {/* Infinite Scroll Trigger */}
+                  <div 
+                    ref={ref} 
+                    style={{ 
+                      marginTop: '2rem', 
+                      textAlign: 'center', 
+                      padding: '2rem',
+                      borderTop: '1px solid var(--border-color)'
+                    }}
+                  >
+                    {isFetchingNextPage ? (
+                      <div style={{ 
+                        display: 'inline-flex', 
+                        alignItems: 'center', 
+                        gap: '0.75rem',
+                        color: 'var(--accent-cyan)',
+                        fontWeight: 500
+                      }}>
+                        <Spinner />
+                        <span>Loading more amazing NFTs...</span>
+                      </div>
+                    ) : hasNextPage ? (
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Scroll for more treasures ✨
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        You've reached the end! 🎉
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>
