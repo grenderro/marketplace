@@ -6,9 +6,13 @@ import { useGetAccountInfo, useGetNetworkConfig } from '../../hooks/sdkStubs';
 import {
   Transaction,
   Address,
-  TokenTransfer,
-  TransactionPayload
+  TokenTransfer
 } from '@multiversx/sdk-core';
+
+// Helper to encode strings to hex
+const toHex = (str: string) => Buffer.from(str, 'utf-8').toString('hex');
+const toHexU64 = (num: number) => num.toString(16).padStart(16, '0');
+const toHexBigInt = (value: bigint) => value.toString(16).padStart(16, '0');
 
 // Stub services
 const uploadToIPFS = async (file: File): Promise<string> => {
@@ -74,7 +78,7 @@ export const CreateCollection: React.FC = () => {
       alert('Please connect your wallet first');
       return;
     }
-    
+
     setIsCreating(true);
 
     try {
@@ -89,26 +93,25 @@ export const CreateCollection: React.FC = () => {
       };
       const metadataHash = await uploadJSONToIPFS(metadata);
 
-      const dataString = `createCollection@` +
-        `${Buffer.from(formData.name).toString('hex')}@` +
-        `${Buffer.from(formData.ticker).toString('hex')}@` +
-        `${formData.maxSupply.toString(16)}@` +
-        `${BigInt(Math.floor(parseFloat(formData.mintPrice) * 1e18)).toString(16)}@` +
-        `${Math.floor(formData.royalties * 100).toString(16)}@` +
-        `${Buffer.from(`ipfs://${metadataHash}`).toString('hex')}`;
-
-      const dataBuffer = Buffer.from(dataString);
-      const nonce = await getNonce(address);
+      // Build transaction data manually: functionName@arg1@arg2...
+      // createCollection@name@ticker@maxSupply@mintPrice@royalties@metadataUri
+      const mintPriceAtomic = BigInt(Math.floor(parseFloat(formData.mintPrice) * 1e18));
+      const royaltiesBasis = BigInt(Math.floor(formData.royalties * 100));
       
-      // SDK v12 compatible - use proper types
+      const dataString = `createCollection@${toHex(formData.name)}@${toHex(formData.ticker)}@${toHexU64(formData.maxSupply)}@${toHexBigInt(mintPriceAtomic)}@${toHexBigInt(royaltiesBasis)}@${toHex(`ipfs://${metadataHash}`)}`;
+      const data = new TextEncoder().encode(dataString);
+
+      const nonce = await getNonce(address);
+
+      // SDK v12+ compatible transaction
       const tx = new Transaction({
-        nonce: nonce, // number, not BigInt
-        value: TokenTransfer.egldFromAmount(0.05), // Use egldFromAmount
-        sender: Address.fromBech32(address), // fromBech32, not newFromBech32
-        receiver: Address.fromBech32(network.apiAddress || 'erd1qqqqqqqqqqqqqpgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'),
-        gasLimit: 100000000, // number, not BigInt
-        data: new TransactionPayload(dataBuffer.toString('base64')), // TransactionPayload, not Buffer
-        chainID: network.chainId || 'D', // string, not Buffer
+        nonce: nonce,
+        value: TokenTransfer.egldFromAmount(0.05), // 0.05 EGLD
+        sender: Address.fromBech32(address),
+        receiver: Address.fromBech32(network?.apiAddress || 'erd1qqqqqqqqqqqqqpgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'),
+        gasLimit: 100000000,
+        data: data as any,
+        chainID: network?.chainId || 'D',
       });
 
       await sendTransaction(tx);
@@ -122,7 +125,6 @@ export const CreateCollection: React.FC = () => {
     }
   };
 
-  // ... rest of component (ReviewStep, BasicInfoStep, etc.) same as before
   const ReviewStep: React.FC<any> = ({ formData, onCreate, isCreating }) => (
     <div className="space-y-4">
       <h3 className="text-xl font-bold">Review</h3>
@@ -237,7 +239,7 @@ export const CreateCollection: React.FC = () => {
   );
 };
 
-// Step Components (BasicInfoStep, TokenomicsStep, AssetsStep) - same as previous version
+// Step Components
 const BasicInfoStep: React.FC<{
   formData: CollectionFormData;
   setFormData: React.Dispatch<React.SetStateAction<CollectionFormData>>;

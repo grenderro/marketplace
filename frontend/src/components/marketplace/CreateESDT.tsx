@@ -270,3 +270,5 @@ const InfoCard: React.FC<{ title: string; description: string; icon: string }> =
     <p className="text-sm text-gray-400">{description}</p>
   </div>
 );
+
+export default CreateESDT;

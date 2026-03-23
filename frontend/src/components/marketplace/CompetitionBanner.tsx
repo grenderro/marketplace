@@ -177,7 +177,7 @@ export const CompetitionBanner: React.FC = () => {
               exit={{ height: 0, opacity: 0 }}
               className="mt-4 pt-4 border-t border-white/10"
             >
-              <LeaderboardPreview competitionId={comp.id} />
+              <LeaderboardPreview />
             </motion.div>
           )}
         </AnimatePresence>

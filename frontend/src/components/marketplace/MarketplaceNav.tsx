@@ -1,153 +1,313 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useSdk } from '../stubs/SdkStubs';
+import { WalletConnector } from '../WalletConnector';
 
-export const MarketplaceNav: React.FC = () => {
-  const currentPath = window.location.pathname;
+interface NavItem {
+  label: string;
+  path: string;
+  icon: string;
+  description: string;
+}
+
+const navItems: NavItem[] = [
+  { label: 'NFTs', path: '/marketplace/nfts', icon: '🎨', description: 'Buy & sell unique digital collectibles' },
+  { label: 'ESDT Tokens', path: '/marketplace/esdt', icon: '🪙', description: 'Trade MultiversX standard tokens' },
+  { label: 'Auctions', path: '/marketplace/auctions', icon: '🔨', description: 'Bid on exclusive items in real-time' },
+  { label: 'Create NFT', path: '/marketplace/create-nft', icon: '➕', description: 'Mint new NFT collections' },
+  { label: 'Create ESDT', path: '/marketplace/create-esdt', icon: '⚡', description: 'Launch new tokens' }
+];
+
+const LOGO_URL = 'https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeiegq45s2v4qixkghaz74ttknojllmw75wmb2wxl6bqyvyccfa2eve';
+
+export default function MarketplaceNav() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isMobile, setIsMobile] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { isAuthenticated } = useSdk();
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      if (window.innerWidth >= 768) setMenuOpen(false);
+    };
+    const handleScroll = () => setScrolled(window.scrollY > 10);
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Lock body scroll when menu open
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? 'hidden' : 'unset';
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [menuOpen]);
+
+  const handleNav = (path: string) => {
+    navigate(path);
+    setMenuOpen(false);
+  };
+
+  const activeItem = navItems.find(item => location.pathname === item.path);
 
   return (
-    <nav style={{ display: 'flex', alignItems: 'center', gap: '3rem' }}>
-      {/* Logo and Brand */}
-      <a href="/explore" style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        textDecoration: 'none'
+    <>
+      <nav style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        background: scrolled || menuOpen ? 'rgba(15, 23, 42, 0.98)' : 'rgba(15, 23, 42, 0.9)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        transition: 'all 0.3s ease'
       }}>
-        {/* Logo Image from IPFS */}
-        <img 
-          src="https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeiegq45s2v4qixkghaz74ttknojllmw75wmb2wxl6bqyvyccfa2eve"
-          alt="Trad3E Logo"
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          padding: isMobile ? '0.75rem 1rem' : '1rem 2rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'relative'
+        }}>
+          {/* Logo */}
+          <div onClick={() => navigate('/')} style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            cursor: 'pointer',
+            height: isMobile ? '36px' : '44px',
+            zIndex: 1002
+          }}>
+            <img
+              src={LOGO_URL}
+              alt="Trad3X"
+              style={{ height: '100%', width: 'auto', objectFit: 'contain' }}
+            />
+          </div>
+
+          {/* Desktop Nav */}
+          {!isMobile && (
+            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => handleNav(item.path)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: location.pathname === item.path ? 'rgba(0, 212, 255, 0.15)' : 'transparent',
+                    border: 'none',
+                    borderRadius: '8px',
+                    color: location.pathname === item.path ? '#00d4ff' : '#94a3b8',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem'
+                  }}
+                >
+                  <span>{item.icon}</span>
+                  {item.label}
+                </button>
+              ))}
+
+              {/* REPLACED: WalletConnector for desktop */}
+              <div style={{ marginLeft: '0.75rem' }}>
+                <WalletConnector variant="nav" />
+              </div>
+            </div>
+          )}
+
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              style={{
+                background: menuOpen ? 'rgba(0, 212, 255, 0.2)' : 'rgba(255,255,255,0.1)',
+                border: 'none',
+                borderRadius: '12px',
+                color: menuOpen ? '#00d4ff' : '#fff',
+                fontSize: '1.25rem',
+                cursor: 'pointer',
+                padding: '0.5rem',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s',
+                zIndex: 1002
+              }}
+            >
+              {menuOpen ? '✕' : '☰'}
+            </button>
+          )}
+        </div>
+
+        {/* Mobile Dropdown Menu */}
+        {isMobile && menuOpen && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            background: 'linear-gradient(180deg, #0f172a 0%, #1e293b 100%)',
+            borderBottom: '1px solid rgba(0, 212, 255, 0.2)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+            zIndex: 1001,
+            animation: 'slideDown 0.3s ease-out',
+            maxHeight: 'calc(100vh - 70px)',
+            overflowY: 'auto'
+          }}>
+            <div style={{ padding: '1rem' }}>
+              {/* Current Page Indicator */}
+              {activeItem && (
+                <div style={{
+                  padding: '0.75rem 1rem',
+                  marginBottom: '1rem',
+                  background: 'rgba(0, 212, 255, 0.1)',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(0, 212, 255, 0.3)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}>
+                  <span style={{ fontSize: '1.5rem' }}>{activeItem.icon}</span>
+                  <div>
+                    <div style={{ color: '#00d4ff', fontWeight: 700, fontSize: '1rem' }}>
+                      Currently on
+                    </div>
+                    <div style={{ color: '#94a3b8', fontSize: '0.875rem' }}>
+                      {activeItem.label}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Nav Grid */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '0.75rem',
+                marginBottom: '1rem'
+              }}>
+                {navItems.map((item) => (
+                  <button
+                    key={item.path}
+                    onClick={() => handleNav(item.path)}
+                    style={{
+                      padding: '1rem 0.75rem',
+                      background: location.pathname === item.path
+                        ? 'rgba(0, 212, 255, 0.2)'
+                        : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${location.pathname === item.path
+                        ? 'rgba(0, 212, 255, 0.5)'
+                        : 'rgba(255,255,255,0.1)'}`,
+                      borderRadius: '12px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <span style={{ fontSize: '1.75rem' }}>{item.icon}</span>
+                    <span style={{
+                      color: location.pathname === item.path ? '#00d4ff' : '#fff',
+                      fontSize: '0.8rem',
+                      fontWeight: 600,
+                      textAlign: 'center'
+                    }}>
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Quick Actions */}
+              <div style={{
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                paddingTop: '1rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem'
+              }}>
+                <button
+                  onClick={() => {
+                    if (!isAuthenticated) alert('Please connect your wallet');
+                    else navigate('/create');
+                    setMenuOpen(false);
+                  }}
+                  style={{
+                    width: '100%',
+                    padding: '1rem',
+                    background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    color: '#0f172a',
+                    fontSize: '1rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                >
+                  <span>➕</span>
+                  Create Listing
+                </button>
+
+                {/* REPLACED: WalletConnector for mobile menu */}
+                <div style={{ marginTop: '0.5rem' }}>
+                  <WalletConnector variant="button" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Backdrop */}
+      {isMobile && menuOpen && (
+        <div
+          onClick={() => setMenuOpen(false)}
           style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '10px',
-            objectFit: 'cover',
-            boxShadow: '0 0 15px rgba(0, 212, 255, 0.4)'
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 999,
+            animation: 'fadeIn 0.2s ease-out'
           }}
         />
+      )}
 
-        {/* Brand Name */}
-        <span style={{
-          fontSize: '1.5rem',
-          fontWeight: '800',
-          background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
-          letterSpacing: '-0.02em'
-        }}>
-          Trad3E
-        </span>
-      </a>
+      {/* Spacer */}
+      <div style={{ height: isMobile ? '60px' : '76px' }} />
 
-      {/* Navigation Links */}
-      <div style={{ display: 'flex', gap: '2rem' }}>
-        <a
-          href="/marketplace/nfts"
-          style={{
-            color: currentPath.includes('/nfts') ? '#00d4ff' : '#94a3b8',
-            textDecoration: 'none',
-            fontWeight: currentPath.includes('/nfts') ? '600' : '500',
-            fontSize: '1rem',
-            padding: '0.5rem 0',
-            position: 'relative',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          NFTs
-          {currentPath.includes('/nfts') && (
-            <span style={{
-              position: 'absolute',
-              bottom: '0',
-              left: '0',
-              right: '0',
-              height: '2px',
-              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
-              boxShadow: '0 0 10px #00d4ff'
-            }} />
-          )}
-        </a>
-
-        <a
-          href="/marketplace/esdt"
-          style={{
-            color: currentPath.includes('/esdt') ? '#00d4ff' : '#94a3b8',
-            textDecoration: 'none',
-            fontWeight: currentPath.includes('/esdt') ? '600' : '500',
-            fontSize: '1rem',
-            padding: '0.5rem 0',
-            position: 'relative',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          ESDT
-          {currentPath.includes('/esdt') && (
-            <span style={{
-              position: 'absolute',
-              bottom: '0',
-              left: '0',
-              right: '0',
-              height: '2px',
-              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
-              boxShadow: '0 0 10px #00d4ff'
-            }} />
-          )}
-        </a>
-
-        {/* Live Auctions - New Navigation Item */}
-        <a
-          href="/marketplace/auctions"
-          style={{
-            color: currentPath.includes('/auctions') ? '#00d4ff' : '#94a3b8',
-            textDecoration: 'none',
-            fontWeight: currentPath.includes('/auctions') ? '600' : '500',
-            fontSize: '1rem',
-            padding: '0.5rem 0',
-            position: 'relative',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          Live Auctions
-          {currentPath.includes('/auctions') && (
-            <span style={{
-              position: 'absolute',
-              bottom: '0',
-              left: '0',
-              right: '0',
-              height: '2px',
-              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
-              boxShadow: '0 0 10px #00d4ff'
-            }} />
-          )}
-        </a>
-
-        <a
-          href="/explore"
-          style={{
-            color: currentPath === '/explore' ? '#00d4ff' : '#94a3b8',
-            textDecoration: 'none',
-            fontWeight: currentPath === '/explore' ? '600' : '500',
-            fontSize: '1rem',
-            padding: '0.5rem 0',
-            position: 'relative',
-            transition: 'all 0.3s ease'
-          }}
-        >
-          Explore
-          {currentPath === '/explore' && (
-            <span style={{
-              position: 'absolute',
-              bottom: '0',
-              left: '0',
-              right: '0',
-              height: '2px',
-              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
-              boxShadow: '0 0 10px #00d4ff'
-            }} />
-          )}
-        </a>
-      </div>
-    </nav>
+      <style>{`
+        @keyframes slideDown {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+      `}</style>
+    </>
   );
-};
-
-export default MarketplaceNav;
+}

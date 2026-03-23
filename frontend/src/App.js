@@ -1,62 +1,76 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+// App.js
+import React, { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { RealSdkProvider } from './components/stubs/SdkStubs';
-import { WalletConnector } from './components/WalletConnector';
-import MarketplaceNav from './components/marketplace/MarketplaceNav';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { DappProvider } from '@multiversx/sdk-dapp/wrappers';
+import { useGetLoginInfo } from '@multiversx/sdk-dapp/hooks';
 import Explore from './pages/explore';
 import NFTMarketplace from './pages/marketplace/nfts';
 import ESDTMarketplace from './pages/marketplace/esdt';
-import TestConnection from './components/TestConnection';
-import { AnalyticsDashboard } from './components/Analytics/AnalyticsDashboard';
 import LiveAuctions from './pages/marketplace/auctions';
+import CreateCollection from './components/marketplace/CreateCollection';
+import CreateESDT from './components/marketplace/CreateESDT';
+import { WalletConnector } from './components/WalletConnector';
+import MarketplaceNav from './components/marketplace/MarketplaceNav';
 import './App.css';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 1,
-      staleTime: 30000,
-    },
-  },
-});
+const queryClient = new QueryClient();
+
+// Auth checker component
+const AuthChecker = () => {
+  const { isLoggedIn } = useGetLoginInfo();
+  
+  useEffect(() => {
+    // Check if we have manual address stored from custom login
+    const storedAddress = localStorage.getItem('wallet_address');
+    if (storedAddress && !isLoggedIn) {
+      console.log('Found stored address:', storedAddress);
+      // The SDK should pick this up, if not we can force a reload
+      if (!window.location.search.includes('address=')) {
+        // Only reload if not already processing a callback
+      }
+    }
+  }, [isLoggedIn]);
+  
+  return null;
+};
 
 function App() {
   return (
-    <RealSdkProvider>
-      <QueryClientProvider client={queryClient}>
-        <Router>
+    <QueryClientProvider client={queryClient}>
+      <Router>
+        <DappProvider
+          environment="devnet"
+          customNetworkConfig={{
+            name: 'customConfig',
+            apiTimeout: 10000
+          }}
+          dappConfig={{
+            shouldUseWebViewProvider: true,
+            logoutRoute: '/',
+          }}
+        >
+          <AuthChecker />
           <div className="app-container">
             <header className="app-header">
               <MarketplaceNav />
               <WalletConnector />
             </header>
-
-            <main className="main-content">
+            <main className="main-content" style={{ minHeight: '500px', background: '#1a1a2e' }}>
               <Routes>
                 <Route path="/" element={<Navigate to="/explore" replace />} />
-                <Route path="/explore" element={<Explore />} />
+                <Route path="/marketplace/explore" element={<Explore />} />
                 <Route path="/marketplace/nfts" element={<NFTMarketplace />} />
                 <Route path="/marketplace/esdt" element={<ESDTMarketplace />} />
                 <Route path="/marketplace/auctions" element={<LiveAuctions />} />
-                <Route path="/test" element={<TestConnection />} />
-                <Route path="/analytics" element={<AnalyticsDashboard />} />
-                <Route path="*" element={
-                  <div style={{ textAlign: 'center', padding: '4rem', color: '#fff' }}>
-                    <h1>404 - Page Not Found</h1>
-                  </div>
-                } />
+                <Route path="/marketplace/create-nft" element={<CreateCollection />} />
+                <Route path="/marketplace/create-esdt" element={<CreateESDT />} />
               </Routes>
             </main>
-
-            <footer className="app-footer">
-              <p>Trad3E Marketplace © 2026 | Devnet Mode</p>
-            </footer>
           </div>
-        </Router>
-      </QueryClientProvider>
-    </RealSdkProvider>
+        </DappProvider>
+      </Router>
+    </QueryClientProvider>
   );
 }
 

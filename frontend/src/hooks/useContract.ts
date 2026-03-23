@@ -1,238 +1,135 @@
-// hooks/useContract.ts
-import { useSdk } from '../components/stubs/SdkStubs';
-import { useEffect, useState, useCallback } from 'react';
-import { 
-  SmartContract, 
-  Address, 
-  ContractFunction,
-  TokenTransfer,
+import { useCallback } from 'react';
+import {
+  Address,
   Transaction,
-  TransactionPayload
+  TokenTransfer
 } from '@multiversx/sdk-core';
+import { useSdk } from '../components/stubs/SdkStubs';
 
-// Your actual marketplace contract address (devnet for now)
-const MARKETPLACE_CONTRACT_ADDRESS = 'erd1qqqqqqqqqqqqqpgqhy6nl6zq07rn7ygqg9k0tpy97y06pf7cgqqq6f4sf4';
+const CONTRACT_ADDRESS = 'erd1qqqqqqqqqqqqqpgqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq';
+
+// Helper to encode string to hex
+const toHex = (str: string) => Buffer.from(str, 'utf-8').toString('hex');
+const toHexU64 = (num: number) => num.toString(16).padStart(16, '0');
+const toHexBigInt = (value: bigint) => value.toString(16).padStart(16, '0');
 
 export const useMarketplaceContract = () => {
-  const { address, isAuthenticated, sendTransaction } = useSdk();
-  const [isReady, setIsReady] = useState(false);
-  const [contract, setContract] = useState<SmartContract | null>(null);
+  const sdk = useSdk();
+  const address = sdk.address;
+  const isAuthenticated = sdk.isAuthenticated;
 
-  // Initialize contract instance
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setIsReady(false);
-      return;
-    }
-
-    try {
-      // Create contract instance (stubbed for now)
-      const contractInstance = new SmartContract({
-        address: new Address(MARKETPLACE_CONTRACT_ADDRESS),
-      });
-      
-      setContract(contractInstance);
-      setIsReady(true);
-    } catch (error) {
-      console.error('Failed to initialize contract:', error);
-      setIsReady(false);
-    }
-  }, [isAuthenticated]);
-
-  // Create NFT Listing
   const createListing = useCallback(async (
-    tokenIdentifier: string, 
-    nonce: number, 
-    price: string,
-    quantity: number = 1
+    tokenIdentifier: string,
+    nonce: number,
+    price: string
   ) => {
     if (!isAuthenticated || !address) {
       throw new Error('Wallet not connected');
     }
 
-    console.log('Creating listing:', { tokenIdentifier, nonce, price, quantity });
+    // Manual SC call encoding: functionName@arg1Hex@arg2Hex@arg3Hex
+    const priceAtomic = BigInt(Math.floor(parseFloat(price) * 1e18));
+    const dataString = `createListing@${toHex(tokenIdentifier)}@${toHexU64(nonce)}@${toHexBigInt(priceAtomic)}`;
+    const data = new TextEncoder().encode(dataString); // Uint8Array
 
-    // Stub transaction - replace with actual contract call when ready
-    const txData = new TransactionPayload(
-      `createListing@${Buffer.from(tokenIdentifier).toString('hex')}@${nonce.toString(16)}@${BigInt(parseFloat(price) * 1e18).toString(16)}`
-    );
+    // 0.05 EGLD in atomic units (18 decimals) = 50000000000000000
+    const value = TokenTransfer.egldFromAmount(0.05);
 
-    return await sendTransaction({
-      type: 'createListing',
-      data: {
-        tokenIdentifier,
-        nonce,
-        price,
-        quantity,
-        sender: address,
-        contractAddress: MARKETPLACE_CONTRACT_ADDRESS,
-        payload: txData.toString()
-      }
+    const tx = new Transaction({
+      nonce: sdk.nonce || 0,
+      value: value,
+      sender: Address.fromBech32(address),
+      receiver: Address.fromBech32(CONTRACT_ADDRESS),
+      gasLimit: 10000000,
+      data: data as any, // Cast to bypass type checking
+      chainID: 'D',
     });
-  }, [isAuthenticated, address, sendTransaction]);
 
-  // Buy NFT
-  const buyListing = useCallback(async (
-    listingId: number,
-    price: string,
-    tokenIdentifier?: string
-  ) => {
-    if (!isAuthenticated) {
-      throw new Error('Wallet not connected');
-    }
-
-    console.log('Buying listing:', { listingId, price });
-
-    return await sendTransaction({
-      type: 'buyListing',
-      data: {
-        listingId,
-        price,
-        buyer: address,
-        tokenIdentifier: tokenIdentifier || 'EGLD'
-      }
-    });
-  }, [isAuthenticated, address, sendTransaction]);
-
-  // Cancel Listing
-  const cancelListing = useCallback(async (listingId: number) => {
-    if (!isAuthenticated) {
-      throw new Error('Wallet not connected');
-    }
-
-    console.log('Cancelling listing:', listingId);
-
-    return await sendTransaction({
-      type: 'cancelListing',
-      data: {
-        listingId,
-        seller: address
-      }
-    });
-  }, [isAuthenticated, address, sendTransaction]);
-
-  // Create Auction (for auction functionality)
-  const createAuction = useCallback(async (
-    tokenIdentifier: string,
-    nonce: number,
-    minBid: string,
-    startTime: number,
-    endTime: number
-  ) => {
-    if (!isAuthenticated) {
-      throw new Error('Wallet not connected');
-    }
-
-    console.log('Creating auction:', { tokenIdentifier, nonce, minBid, startTime, endTime });
-
-    return await sendTransaction({
-      type: 'createAuction',
-      data: {
-        tokenIdentifier,
-        nonce,
-        minBid,
-        startTime,
-        endTime,
-        seller: address
-      }
-    });
-  }, [isAuthenticated, address, sendTransaction]);
-
-  // Place Bid
-  const placeBid = useCallback(async (auctionId: number, bidAmount: string) => {
-    if (!isAuthenticated) {
-      throw new Error('Wallet not connected');
-    }
-
-    console.log('Placing bid:', { auctionId, bidAmount });
-
-    return await sendTransaction({
-      type: 'placeBid',
-      data: {
-        auctionId,
-        bidAmount,
-        bidder: address
-      }
-    });
-  }, [isAuthenticated, address, sendTransaction]);
+    return tx;
+  }, [address, isAuthenticated, sdk.nonce]);
 
   return {
-    isReady,
-    isAuthenticated,
-    contractAddress: MARKETPLACE_CONTRACT_ADDRESS,
-    contract,
-    // Listing operations
+    isReady: isAuthenticated,
     createListing,
-    buyListing,
-    cancelListing,
-    // Auction operations
-    createAuction,
-    placeBid,
+    address,
+    isAuthenticated
   };
 };
 
 // Specialized hook for ESDT operations
 export const useESDTContract = () => {
-  const { address, isAuthenticated, sendTransaction } = useSdk();
+  const sdk = useSdk();
+  const address = sdk.address;
+  const isAuthenticated = sdk.isAuthenticated;
 
   const transferESDT = useCallback(async (
     tokenIdentifier: string,
     amount: string,
-    recipient: string
+    receiverAddress: string
   ) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !address) {
       throw new Error('Wallet not connected');
     }
 
-    console.log('Transferring ESDT:', { tokenIdentifier, amount, recipient });
+    // ESDTTransfer@tokenID@amountHex
+    const hexToken = toHex(tokenIdentifier);
+    const hexAmount = BigInt(amount).toString(16).padStart(16, '0');
+    const dataString = `ESDTTransfer@${hexToken}@${hexAmount}`;
+    const data = new TextEncoder().encode(dataString);
 
-    return await sendTransaction({
-      type: 'esdtTransfer',
-      data: {
-        tokenIdentifier,
-        amount,
-        sender: address,
-        recipient
-      }
+    const tx = new Transaction({
+      nonce: sdk.nonce || 0,
+      value: TokenTransfer.egldFromAmount(0), // 0 EGLD for ESDT transfers
+      sender: Address.fromBech32(address),
+      receiver: Address.fromBech32(receiverAddress),
+      gasLimit: 500000,
+      data: data as any,
+      chainID: 'D',
     });
-  }, [isAuthenticated, address, sendTransaction]);
 
-  return {
-    transferESDT,
-    isAuthenticated,
-  };
+    return tx;
+  }, [address, isAuthenticated, sdk.nonce]);
+
+  return { transferESDT };
 };
 
 // Specialized hook for NFT operations
 export const useNFTContract = () => {
-  const { address, isAuthenticated, sendTransaction } = useSdk();
+  const sdk = useSdk();
+  const address = sdk.address;
+  const isAuthenticated = sdk.isAuthenticated;
 
   const transferNFT = useCallback(async (
     tokenIdentifier: string,
     nonce: number,
-    recipient: string
+    receiverAddress: string
   ) => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !address) {
       throw new Error('Wallet not connected');
     }
 
-    console.log('Transferring NFT:', { tokenIdentifier, nonce, recipient });
+    // ESDTNFTTransfer@tokenID@nonce@quantity@destination
+    const hexToken = toHex(tokenIdentifier);
+    const hexNonce = nonce.toString(16).padStart(16, '0');
+    const hexQuantity = '01'; // 1 NFT
+    const destAddress = Address.fromBech32(receiverAddress);
+    const hexReceiver = destAddress.hex(); // .hex is a property, not method
+    
+    const dataString = `ESDTNFTTransfer@${hexToken}@${hexNonce}@${hexQuantity}@${hexReceiver}`;
+    const data = new TextEncoder().encode(dataString);
 
-    return await sendTransaction({
-      type: 'nftTransfer',
-      data: {
-        tokenIdentifier,
-        nonce,
-        sender: address,
-        recipient
-      }
+    const tx = new Transaction({
+      nonce: sdk.nonce || 0,
+      value: TokenTransfer.egldFromAmount(0), // 0 EGLD
+      sender: Address.fromBech32(address),
+      receiver: destAddress, // For NFT transfers, receiver is the same as sender, actual dest is in data
+      gasLimit: 1000000,
+      data: data as any,
+      chainID: 'D',
     });
-  }, [isAuthenticated, address, sendTransaction]);
 
-  return {
-    transferNFT,
-    isAuthenticated,
-  };
+    return tx;
+  }, [address, isAuthenticated, sdk.nonce]);
+
+  return { transferNFT };
 };
-
-export default useMarketplaceContract;

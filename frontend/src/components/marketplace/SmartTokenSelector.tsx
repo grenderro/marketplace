@@ -137,7 +137,7 @@ export const SmartTokenSelector: React.FC<{
         {isLoading ? (
           <LoadingState />
         ) : tokens.length === 0 ? (
-          <EmptyState tier={activeTier} />
+          <EmptyState message={`No tokens found for ${activeTier} tier`} />
         ) : (
           <TokenList 
             tokens={tokens} 
