@@ -38,9 +38,6 @@
     "url": "^0.11.4",
     "web-vitals": "^2.1.4"
   },
-"scripts": {
-  "start": "BROWSER=none react-scripts start"
-},
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",

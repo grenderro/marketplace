@@ -11,11 +11,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { label: 'NFTs', path: '/marketplace/nfts', icon: '🎨', description: 'Buy & sell unique digital collectibles' },
-  { label: 'ESDT Tokens', path: '/marketplace/esdt', icon: '🪙', description: 'Trade MultiversX standard tokens' },
-  { label: 'Auctions', path: '/marketplace/auctions', icon: '🔨', description: 'Bid on exclusive items in real-time' },
-  { label: 'Create NFT', path: '/marketplace/create-nft', icon: '➕', description: 'Mint new NFT collections' },
-  { label: 'Create ESDT', path: '/marketplace/create-esdt', icon: '⚡', description: 'Launch new tokens' }
+  { label: 'NFTs', path: '/nfts', icon: '🎨', description: 'Buy & sell unique digital collectibles' },
+  { label: 'ESDT Tokens', path: '/esdt', icon: '🪙', description: 'Trade MultiversX standard tokens' },
+  { label: 'Auctions', path: '/auctions', icon: '🔨', description: 'Bid on exclusive items in real-time' },
+  { label: 'Create NFT', path: '/create-nft', icon: '➕', description: 'Mint new NFT collections' },
+  { label: 'Create ESDT', path: '/create-esdt', icon: '⚡', description: 'Launch new tokens' }
 ];
 
 const LOGO_URL = 'https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeiegq45s2v4qixkghaz74ttknojllmw75wmb2wxl6bqyvyccfa2eve';
