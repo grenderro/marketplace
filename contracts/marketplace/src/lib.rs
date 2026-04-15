@@ -70,7 +70,7 @@ pub trait Marketplace {
             amount: payment.amount.clone(),
             price_token,
             price_amount,
-            created_at: self.blockchain().get_block_timestamp_seconds().0,
+            created_at: self.blockchain().get_block_timestamp_seconds().into(),
             active: true,
         });
 
@@ -151,7 +151,8 @@ pub trait Marketplace {
     ) -> u64 {
         let payment = self.call_value().single_esdt();
         let caller = self.blockchain().get_caller();
-        let end_time = self.blockchain().get_block_timestamp_seconds().0 + duration_seconds;
+        let end_time: u64 = self.blockchain().get_block_timestamp_seconds().into();
+        let end_time = end_time + duration_seconds;
 
         let id = self.auction_id().get() + 1;
         self.auction_id().set(id);
@@ -178,7 +179,7 @@ pub trait Marketplace {
     fn place_bid(&self, auction_id: u64) {
         let payment = self.call_value().single_esdt();
         let bidder = self.blockchain().get_caller();
-        let current_time = self.blockchain().get_block_timestamp_seconds().0;
+        let current_time: u64 = self.blockchain().get_block_timestamp_seconds().into();
 
         let auction = self.auctions(auction_id).get();
         require!(auction.active, "Not active");
@@ -212,7 +213,7 @@ pub trait Marketplace {
 
     #[endpoint(endAuction)]
     fn end_auction(&self, auction_id: u64) {
-        let current_time = self.blockchain().get_block_timestamp_seconds().0;
+        let current_time: u64 = self.blockchain().get_block_timestamp_seconds().into();
         let auction = self.auctions(auction_id).get();
 
         require!(auction.active, "Not active");
@@ -264,7 +265,7 @@ pub trait Marketplace {
 
     #[view(getAuction)]
     fn get_auction(&self, id: u64) -> Auction<Self::Api> {
-        self.auctions(auction_id).get()
+        self.auctions(id).get()
     }
 
     #[storage_mapper("fee_percent")]
