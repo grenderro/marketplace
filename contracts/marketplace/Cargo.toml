@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies.multiversx-sc]
 version = "=0.64.1"  # Match CLI version
+multiversx-sc-meta = "0.24.0"
 
 [dev-dependencies.multiversx-sc-scenario]
 version = "=0.64.1"
