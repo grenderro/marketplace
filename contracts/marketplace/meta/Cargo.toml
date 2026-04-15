@@ -7,4 +7,4 @@ publish = false
 [dependencies]
 marketplace = { path = ".." }
 
-multiversx-sc-meta-lib = "0.64.1"  # Replace the old multiversx-sc-meta
+multiversx-sc-meta = "0.64.1"
