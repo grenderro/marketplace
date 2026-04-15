@@ -70,7 +70,7 @@ pub trait Marketplace {
             amount: payment.amount.clone(),
             price_token,
             price_amount,
-            created_at: self.blockchain().get_block_timestamp_seconds(),
+            created_at: self.blockchain().get_block_timestamp_seconds().0,
             active: true,
         });
 
@@ -151,7 +151,7 @@ pub trait Marketplace {
     ) -> u64 {
         let payment = self.call_value().single_esdt();
         let caller = self.blockchain().get_caller();
-        let end_time = self.blockchain().get_block_timestamp_seconds() + duration_seconds;
+        let end_time = self.blockchain().get_block_timestamp_seconds().0 + duration_seconds;
 
         let id = self.auction_id().get() + 1;
         self.auction_id().set(id);
@@ -178,9 +178,9 @@ pub trait Marketplace {
     fn place_bid(&self, auction_id: u64) {
         let payment = self.call_value().single_esdt();
         let bidder = self.blockchain().get_caller();
-        let current_time = self.blockchain().get_block_timestamp_seconds();
+        let current_time = self.blockchain().get_block_timestamp_seconds().0;
 
-        let mut auction = self.auctions(auction_id).get();
+        let auction = self.auctions(auction_id).get();
         require!(auction.active, "Not active");
         require!(current_time < auction.end_time, "Ended");
         require!(auction.seller != bidder, "Can't bid own");
@@ -194,29 +194,31 @@ pub trait Marketplace {
 
         require!(payment.amount >= min_bid, "Bid too low");
 
-        if let Some(prev) = &auction.highest_bidder {
+        // Refund previous bidder
+        if let Some(ref prev_bidder) = auction.highest_bidder {
             self.send().direct_esdt(
-                prev,
+                prev_bidder,
                 &auction.payment_token,
                 0,
                 &auction.highest_bid,
             );
         }
 
-        auction.highest_bid = payment.amount.clone();
-        auction.highest_bidder = Some(bidder);
-        self.auctions(auction_id).set(auction);
+        self.auctions(auction_id).update(|a| {
+            a.highest_bid = payment.amount;
+            a.highest_bidder = Some(bidder);
+        });
     }
 
     #[endpoint(endAuction)]
     fn end_auction(&self, auction_id: u64) {
-        let current_time = self.blockchain().get_block_timestamp_seconds();
+        let current_time = self.blockchain().get_block_timestamp_seconds().0;
         let auction = self.auctions(auction_id).get();
 
         require!(auction.active, "Not active");
         require!(current_time >= auction.end_time, "Not ended");
 
-        if let Some(winner) = &auction.highest_bidder {
+        if let Some(ref winner) = auction.highest_bidder {
             let fee = &auction.highest_bid * self.fee_percent().get() / 10000u64;
             let seller_amount = &auction.highest_bid - &fee;
 
@@ -243,6 +245,7 @@ pub trait Marketplace {
                 &auction.amount,
             );
         } else {
+            // Return NFT to seller if no bids
             self.send().direct_esdt(
                 &auction.seller,
                 &auction.token_id,
@@ -261,7 +264,7 @@ pub trait Marketplace {
 
     #[view(getAuction)]
     fn get_auction(&self, id: u64) -> Auction<Self::Api> {
-        self.auctions(id).get()
+        self.auctions(auction_id).get()
     }
 
     #[storage_mapper("fee_percent")]
