@@ -3,16 +3,13 @@ name = "marketplace"
 version = "0.0.0"
 edition = "2021"
 
-[dependencies.multiversx-sc]
-version = "=0.64.1"  # Match CLI version
+[dependencies]
+multiversx-sc = "=0.64.1"
 multiversx-sc-meta = "0.24.0"
 
-[dev-dependencies.multiversx-sc-scenario]
-version = "=0.64.1"
+[dev-dependencies]
+multiversx-sc-scenario = "=0.64.1"
 
 [workspace]
 members = [".", "meta"]
 resolver = "2"
-
-[workspace.dependencies.multiversx-sc]
-version = "=0.64.1"
