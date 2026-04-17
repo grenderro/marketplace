@@ -70,7 +70,7 @@ pub trait Marketplace {
             amount: payment.amount.clone(),
             price_token,
             price_amount,
-            created_at: self.blockchain().get_block_timestamp_seconds().as_u64(),
+            created_at: self.blockchain().get_block_timestamp(),
             active: true,
         });
 
@@ -151,7 +151,7 @@ pub trait Marketplace {
     ) -> u64 {
         let payment = self.call_value().single_esdt();
         let caller = self.blockchain().get_caller();
-        let end_time = self.blockchain().get_block_timestamp_seconds().as_u64() + duration_seconds;
+        let end_time = self.blockchain().get_block_timestamp() + duration_seconds;
 
         let id = self.auction_id().get() + 1;
         self.auction_id().set(id);
@@ -178,7 +178,7 @@ pub trait Marketplace {
     fn place_bid(&self, auction_id: u64) {
         let payment = self.call_value().single_esdt();
         let bidder = self.blockchain().get_caller();
-        let current_time = self.blockchain().get_block_timestamp_seconds().as_u64();
+        let current_time = self.blockchain().get_block_timestamp();
 
         let auction = self.auctions(auction_id).get();
         require!(auction.active, "Not active");
@@ -212,7 +212,7 @@ pub trait Marketplace {
 
     #[endpoint(endAuction)]
     fn end_auction(&self, auction_id: u64) {
-        let current_time = self.blockchain().get_block_timestamp_seconds().as_u64();
+        let current_time = self.blockchain().get_block_timestamp();
         let auction = self.auctions(auction_id).get();
 
         require!(auction.active, "Not active");
