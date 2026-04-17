@@ -205,7 +205,7 @@ pub trait Marketplace {
         }
 
         self.auctions(auction_id).update(|a| {
-            a.highest_bid = payment.amount;
+            a.highest_bid = payment.amount.clone();
             a.highest_bidder = Some(bidder);
         });
     }
