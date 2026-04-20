@@ -11,6 +11,15 @@ import { blockchainListener } from './services/blockchainEvents';
 
 dotenv.config();
 
+// Validate critical environment variables
+const requiredEnv = ['JWT_SECRET', 'DB_PASSWORD', 'DB_USERNAME'];
+const missing = requiredEnv.filter((key) => !process.env[key]);
+if (missing.length > 0) {
+    console.error('❌ Missing required environment variables:', missing.join(', '));
+    console.error('   Please copy .env.example to .env and fill in your values.');
+    process.exit(1);
+}
+
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 
@@ -62,10 +71,9 @@ process.on('SIGTERM', async () => {
     await AppDataSource.destroy();
     process.exit(0);
 });
-// At the bottom of index.ts, add:
 process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
-    // Don't exit - log and continue
+    console.error('FATAL Uncaught Exception:', err);
+    process.exit(1);
 });
 
 process.on('unhandledRejection', (reason, promise) => {

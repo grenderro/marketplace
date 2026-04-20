@@ -41,7 +41,9 @@ export const CompetitionAdmin: React.FC = () => {
   };
 
   const createCompetition = async () => {
-    const response = await fetch('/api/competition/create', {
+    const response = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
+    /*
+    {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -57,6 +59,7 @@ export const CompetitionAdmin: React.FC = () => {
         })),
       }),
     });
+    */
 
     if (response.ok) {
       alert('Competition created successfully!');

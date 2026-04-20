@@ -1,16 +1,16 @@
-// config.ts - MultiversX Marketplace Configuration
+// config.ts — MultiversX Marketplace Configuration (Decentralized)
+// No backend dependencies. All data comes from the MultiversX blockchain or IPFS.
 
-// Network Configuration
 export const DAPP_CONFIG = {
   environment: 'devnet' as const, // 'devnet', 'testnet', or 'mainnet'
 };
 
 // Your Smart Contract Address (Devnet)
-export const CONTRACT_ADDRESS = 
-  process.env.REACT_APP_CONTRACT_ADDRESS || 
+export const CONTRACT_ADDRESS =
+  process.env.REACT_APP_CONTRACT_ADDRESS ||
   'erd1qqqqqqqqqqqqqpgqmzpauhqppu707208j8zrjq8q7trpgw7yvhuqtjt9ev';
 
-// MultiversX Network Endpoints (Devnet)
+// MultiversX Network Endpoints
 export const NETWORK_CONFIG = {
   devnet: {
     id: 'devnet',
@@ -38,29 +38,22 @@ export const NETWORK_CONFIG = {
   },
 };
 
-// Active Network (based on DAPP_CONFIG)
 export const ACTIVE_NETWORK = NETWORK_CONFIG[DAPP_CONFIG.environment];
 
-// Blockchain-specific exports
 export const API_URL = ACTIVE_NETWORK.apiAddress;
 export const GATEWAY_URL = ACTIVE_NETWORK.gatewayAddress;
 export const CHAIN_ID = ACTIVE_NETWORK.chainId;
 export const BLOCKCHAIN_EXPLORER = ACTIVE_NETWORK.explorerAddress;
 export const WALLET_URL = ACTIVE_NETWORK.walletAddress;
 
-// Backend API Configuration (Your Node.js API)
-export const BACKEND_API_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:3001/api';
-export const WS_URL = process.env.REACT_APP_WS_URL || 'ws://localhost:3001';
-
-// IPFS Configuration (for NFT metadata)
+// IPFS Configuration
 export const IPFS_CONFIG = {
   gateway: 'https://ipfs.io/ipfs/',
-  uploadGateway: 'https://api.pinata.cloud', // or your preferred IPFS service
+  uploadGateway: 'https://api.pinata.cloud',
 };
 
-// Marketplace-specific Constants
+// Marketplace Constants
 export const MARKETPLACE_CONFIG = {
-  // Transaction gas limits
   gasLimits: {
     createListing: 10000000,
     buyListing: 10000000,
@@ -70,31 +63,22 @@ export const MARKETPLACE_CONFIG = {
     createCollection: 50000000,
     mintNFT: 20000000,
   },
-  
-  // Fees (in percentage)
   fees: {
-    marketplaceFee: 2, // 2%
-    royaltyMax: 10,    // 10% max royalty
+    marketplaceFee: 2,
+    royaltyMax: 10,
   },
-  
-  // Pagination
   itemsPerPage: 24,
-  
-  // Auction settings
   auction: {
-    minDuration: 3600,    // 1 hour in seconds
-    maxDuration: 2592000, // 30 days in seconds
+    minDuration: 3600,
+    maxDuration: 2592000,
   },
 };
 
-// Token identifiers (Devnet)
 export const TOKENS = {
   EGLD: 'EGLD',
-  // Add other ESDT tokens you support
-  USDC: 'USDC-350c4e', // Example devnet USDC
+  USDC: 'USDC-350c4e',
 };
 
-// Helper function to get explorer links
 export const getExplorerLink = (type: 'address' | 'transaction' | 'token', value: string) => {
   const base = BLOCKCHAIN_EXPLORER;
   switch (type) {
@@ -109,7 +93,6 @@ export const getExplorerLink = (type: 'address' | 'transaction' | 'token', value
   }
 };
 
-// Export default for convenience
 export default {
   DAPP_CONFIG,
   CONTRACT_ADDRESS,
@@ -119,8 +102,6 @@ export default {
   GATEWAY_URL,
   CHAIN_ID,
   BLOCKCHAIN_EXPLORER,
-  BACKEND_API_URL,
-  WS_URL,
   IPFS_CONFIG,
   MARKETPLACE_CONFIG,
   TOKENS,

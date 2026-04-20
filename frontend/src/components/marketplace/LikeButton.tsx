@@ -1,8 +1,8 @@
-// components/LikeButton.tsx
-import React, { useState } from 'react';
+// components/LikeButton.tsx — Client-side likes using localStorage (decentralized fallback)
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart } from 'lucide-react';
-import { useGetAccountInfo } from '../../hooks/sdkStubs';
+import { useGetAccountInfo } from '@multiversx/sdk-dapp/hooks';
 
 interface LikeButtonProps {
   targetType: 'nft' | 'collection' | 'user' | 'listing';
@@ -11,6 +11,20 @@ interface LikeButtonProps {
   initialLiked?: boolean;
   size?: 'sm' | 'md' | 'lg';
   showCount?: boolean;
+}
+
+const STORAGE_KEY = 'marketplace_likes';
+
+function getLikedSet(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return new Set(JSON.parse(raw));
+  } catch { /* ignore */ }
+  return new Set();
+}
+
+function setLikedSet(set: Set<string>) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(set)));
 }
 
 export const LikeButton: React.FC<LikeButtonProps> = ({
@@ -22,9 +36,15 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
   showCount = true,
 }) => {
   const { address } = useGetAccountInfo();
-  const [isLiked, setIsLiked] = useState(initialLiked);
+  const key = `${targetType}:${targetId}`;
+  const likedSet = getLikedSet();
+  const [isLiked, setIsLiked] = useState(likedSet.has(key) || initialLiked);
   const [likeCount, setLikeCount] = useState(initialLikes);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    setIsLiked(likedSet.has(key) || initialLiked);
+  }, [key, initialLiked]);
 
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -40,51 +60,33 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
 
   const handleLike = async () => {
     if (!address) {
-      // Show connect wallet modal
+      alert('Please connect your wallet to like items');
       return;
     }
 
     setIsAnimating(true);
 
-    try {
-      if (isLiked) {
-        // Unlike
-        await fetch('/api/social/unlike', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetType,
-            targetId,
-          }),
-        });
-        setLikeCount(prev => prev - 1);
-        setIsLiked(false);
-      } else {
-        // Like
-        await fetch('/api/social/like', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            targetType,
-            targetId,
-          }),
-        });
-        setLikeCount(prev => prev + 1);
-        setIsLiked(true);
-      }
-    } catch (error) {
-      console.error('Like failed:', error);
-    } finally {
-      setTimeout(() => setIsAnimating(false), 300);
+    const set = getLikedSet();
+    if (isLiked) {
+      set.delete(key);
+      setLikeCount(prev => Math.max(0, prev - 1));
+      setIsLiked(false);
+    } else {
+      set.add(key);
+      setLikeCount(prev => prev + 1);
+      setIsLiked(true);
     }
+    setLikedSet(set);
+
+    setTimeout(() => setIsAnimating(false), 300);
   };
 
   return (
     <button
       onClick={handleLike}
       className={`relative flex items-center gap-2 ${sizeClasses[size]} rounded-full transition-all ${
-        isLiked 
-          ? 'bg-red-500/20 text-red-500' 
+        isLiked
+          ? 'bg-red-500/20 text-red-500'
           : 'bg-gray-800 text-gray-400 hover:text-red-400 hover:bg-red-500/10'
       }`}
       disabled={isAnimating}
@@ -102,13 +104,13 @@ export const LikeButton: React.FC<LikeButtonProps> = ({
             </motion.div>
           )}
         </AnimatePresence>
-        
+
         <motion.div
           animate={isAnimating && isLiked ? { scale: [1, 1.3, 1] } : {}}
           transition={{ duration: 0.3 }}
         >
-          <Heart 
-            className={`${iconSizes[size]} ${isLiked ? 'fill-current' : ''} transition-transform`} 
+          <Heart
+            className={`${iconSizes[size]} ${isLiked ? 'fill-current' : ''} transition-transform`}
           />
         </motion.div>
       </div>

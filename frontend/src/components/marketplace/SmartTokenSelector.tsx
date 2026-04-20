@@ -70,7 +70,7 @@ export const SmartTokenSelector: React.FC<{
   const { data: tokensData, isLoading } = useQuery({
     queryKey: ['discovered-tokens', activeTier],
     queryFn: async () => {
-      const res = await fetch(`/api/tokens?tier=${activeTier}`);
+      const res = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
       return res.json();
     },
     staleTime: 2 * 60 * 1000, // 2 minutes

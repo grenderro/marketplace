@@ -23,7 +23,7 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
     }
     
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key') as any;
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
         req.user = { address: decoded.address };
         next();
     } catch (error) {

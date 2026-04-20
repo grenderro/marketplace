@@ -1,11 +1,28 @@
-// mobile/App.tsx
+// mobile/App.tsx — React Native Marketplace App (fixed imports)
 import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { useFonts } from 'expo-font';
+
+// Simple inline icons (no external lib needed)
+const HomeIcon = ({ color, size }: { color: string; size: number }) => (
+  <Text style={{ color, fontSize: size }}>🏠</Text>
+);
+const SearchIcon = ({ color, size }: { color: string; size: number }) => (
+  <Text style={{ color, fontSize: size }}>🔍</Text>
+);
+const PlusIcon = ({ color, size }: { color: string; size: number }) => (
+  <Text style={{ color, fontSize: size }}>➕</Text>
+);
+const ActivityIcon = ({ color, size }: { color: string; size: number }) => (
+  <Text style={{ color, fontSize: size }}>🔔</Text>
+);
+const UserIcon = ({ color, size }: { color: string; size: number }) => (
+  <Text style={{ color, fontSize: size }}>👤</Text>
+);
 
 // Screens
 import { HomeScreen } from './screens/HomeScreen';
@@ -38,29 +55,29 @@ function TabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen 
-        name="Home" 
+      <Tab.Screen
+        name="Home"
         component={HomeScreen}
         options={{
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <HomeIcon color={color} size={24} />
           ),
         }}
       />
-      <Tab.Screen 
-        name="Discover" 
+      <Tab.Screen
+        name="Discover"
         component={DiscoverScreen}
         options={{
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <SearchIcon color={color} size={24} />
           ),
         }}
       />
-      <Tab.Screen 
-        name="Create" 
+      <Tab.Screen
+        name="Create"
         component={CreateScreen}
         options={{
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <View style={styles.createButton}>
               <PlusIcon color="#fff" size={28} />
             </View>
@@ -68,22 +85,22 @@ function TabNavigator() {
           tabBarLabel: () => null,
         }}
       />
-      <Tab.Screen 
-        name="Activity" 
+      <Tab.Screen
+        name="Activity"
         component={ActivityScreen}
         options={{
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <ActivityIcon color={color} size={24} />
           ),
           tabBarBadge: 3,
           tabBarBadgeStyle: { backgroundColor: '#ff0080' },
         }}
       />
-      <Tab.Screen 
-        name="Profile" 
+      <Tab.Screen
+        name="Profile"
         component={ProfileScreen}
         options={{
-          tabBarIcon: ({ color }) => (
+          tabBarIcon: ({ color }: { color: string }) => (
             <UserIcon color={color} size={24} />
           ),
         }}
@@ -93,14 +110,6 @@ function TabNavigator() {
 }
 
 export default function App() {
-  const [fontsLoaded] = useFonts({
-    'Inter-Bold': require('./assets/fonts/Inter-Bold.ttf'),
-    'Inter-Regular': require('./assets/fonts/Inter-Regular.ttf'),
-    'SpaceMono': require('./assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  if (!fontsLoaded) return null;
-
   return (
     <SafeAreaProvider>
       <ThemeProvider>
@@ -114,18 +123,18 @@ export default function App() {
                 contentStyle: { backgroundColor: '#0a0a0f' },
               }}
             >
-              <Stack.Screen 
-                name="Main" 
-                component={TabNavigator} 
+              <Stack.Screen
+                name="Main"
+                component={TabNavigator}
                 options={{ headerShown: false }}
               />
-              <Stack.Screen 
-                name="NFTDetail" 
+              <Stack.Screen
+                name="NFTDetail"
                 component={NFTDetailScreen}
                 options={{ title: 'Details', presentation: 'modal' }}
               />
-              <Stack.Screen 
-                name="Checkout" 
+              <Stack.Screen
+                name="Checkout"
                 component={CheckoutScreen}
                 options={{ title: 'Complete Purchase', presentation: 'fullScreenModal' }}
               />

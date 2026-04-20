@@ -42,7 +42,9 @@ export const ReportModal: React.FC<ReportModalProps> = ({
     setStep('submitting');
 
     try {
-      const response = await fetch('/api/social/report', {
+      const response = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
+      /*
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -53,6 +55,7 @@ export const ReportModal: React.FC<ReportModalProps> = ({
           evidenceUrl: evidenceUrl || undefined,
         }),
       });
+      */
 
       if (response.ok) {
         setStep('success');

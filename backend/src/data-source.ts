@@ -10,12 +10,20 @@ import { InitialSchema1771940153000 } from './migrations/1771940153000-InitialSc
 
 dotenv.config();
 
+if (!process.env.DB_PASSWORD) {
+    throw new Error('DB_PASSWORD environment variable is required. See .env.example');
+}
+
+if (!process.env.DB_USERNAME) {
+    throw new Error('DB_USERNAME environment variable is required. See .env.example');
+}
+
 export const AppDataSource = new DataSource({
     type: 'postgres',
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432'),
-    username: process.env.DB_USERNAME || 'trad3ex',
-    password: process.env.DB_PASSWORD || 'MuIsT@491352',
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD || '',
     database: process.env.DB_NAME || 'trad3ex',
     synchronize: false, // NEVER true in production—use migrations only
     logging: process.env.NODE_ENV === 'development',

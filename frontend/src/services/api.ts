@@ -1,20 +1,41 @@
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+// Decentralized API layer — queries MultiversX blockchain directly.
+// No backend server required for core marketplace functionality.
 
-export const fetchGlobalStats = async () => {
-  const res = await fetch(`${API_URL}/api/analytics/global`);
-  if (!res.ok) throw new Error('Failed to fetch stats');
-  return res.json();
+import { API_URL } from '../config';
+
+// ============== ANALYTICS (Computed from on-chain data) ==============
+
+export interface GlobalStats {
+  totalListings: number;
+  totalVolume: string;
+  activeUsers: number;
+  feesGenerated: string;
+}
+
+export const fetchGlobalStats = async (): Promise<GlobalStats> => {
+  // In a fully decentralized app, these would come from a subgraph or be computed
+  // from the blockchain. For now, return zeros — the UI can hide or show placeholders.
+  // TODO: Integrate The Graph protocol for real-time on-chain analytics.
+  return {
+    totalListings: 0,
+    totalVolume: '0',
+    activeUsers: 0,
+    feesGenerated: '0',
+  };
 };
 
-export const fetchLeaderboard = async () => {
-  const res = await fetch(`${API_URL}/api/analytics/leaderboard`);
-  if (!res.ok) throw new Error('Failed to fetch leaderboard');
-  return res.json();
+export interface LeaderboardEntry {
+  address: string;
+  volume: string;
+}
+
+export const fetchLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+  // TODO: Replace with The Graph query against contract events.
+  return [];
 };
 
-export const fetchListings = async (params?: Record<string, string>) => {
-  const query = params ? `?${new URLSearchParams(params)}` : '';
-  const res = await fetch(`${API_URL}/api/listings${query}`);
-  if (!res.ok) throw new Error('Failed to fetch listings');
-  return res.json();
-};
+// ============== LISTINGS (Delegated to multiversxApi.ts) ==============
+// Core NFT fetching lives in services/multiversxApi.ts which calls
+// https://api.multiversx.com directly.
+
+export { fetchMarketplaceNFTs, fetchCollections, searchNFTs, fetchNFTDetails } from './multiversxApi';

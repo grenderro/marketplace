@@ -1,4 +1,5 @@
-const API_URL = 'https://api.multiversx.com';
+// services/multiversxApi.ts — Queries MultiversX API directly. No backend required.
+import { API_URL } from '../config';
 
 export interface NFT {
   identifier: string;
@@ -43,7 +44,7 @@ export const fetchMarketplaceNFTs = async (params: {
   size?: number;
 } = {}): Promise<NFTResponse> => {
   const queryParams = new URLSearchParams();
-  
+
   if (params.search) queryParams.set('search', params.search);
   if (params.collection) queryParams.set('collection', params.collection);
   if (params.tags?.length) queryParams.set('tags', params.tags.join(','));
@@ -52,13 +53,13 @@ export const fetchMarketplaceNFTs = async (params: {
   if (params.sort) queryParams.set('sort', params.sort);
   if (params.page) queryParams.set('from', ((params.page - 1) * (params.size || 20)).toString());
   if (params.size) queryParams.set('size', params.size.toString());
-  
+
   const response = await fetch(`${API_URL}/nfts?${queryParams.toString()}&withOwner=true&withMetadata=true`);
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch NFTs');
   }
-  
+
   const data = await response.json();
   return { items: data, total: data.length, hasMore: data.length === (params.size || 20) };
 };
@@ -71,5 +72,11 @@ export const fetchCollections = async (): Promise<string[]> => {
 
 export const searchNFTs = async (query: string): Promise<NFT[]> => {
   const response = await fetch(`${API_URL}/nfts?search=${encodeURIComponent(query)}&size=20&withMetadata=true`);
+  return await response.json();
+};
+
+export const fetchNFTDetails = async (identifier: string): Promise<NFT | null> => {
+  const response = await fetch(`${API_URL}/nfts/${encodeURIComponent(identifier)}?withOwner=true&withMetadata=true`);
+  if (!response.ok) return null;
   return await response.json();
 };

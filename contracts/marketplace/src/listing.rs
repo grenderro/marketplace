@@ -84,7 +84,7 @@ pub trait ListingModule: crate::events::EventsModule + crate::Marketplace {
         let payment = self.call_value().single_esdt();
         let buyer = self.blockchain().get_caller();
         
-        require!(self.listings(listing_id).is_empty(), "Listing not found");
+        require!(!self.listings(listing_id).is_empty(), "Listing not found");
         let mut listing = self.listings(listing_id).get();
         
         require!(listing.status == ListingStatus::Active, "Listing not active");
@@ -153,7 +153,7 @@ pub trait ListingModule: crate::events::EventsModule + crate::Marketplace {
     #[endpoint(cancelListing)]
     fn cancel_listing(&self, listing_id: u64) {
         let caller = self.blockchain().get_caller();
-        require!(self.listings(listing_id).is_empty(), "Listing not found");
+        require!(!self.listings(listing_id).is_empty(), "Listing not found");
         
         let mut listing = self.listings(listing_id).get();
         require!(listing.seller == caller, "Not the seller");

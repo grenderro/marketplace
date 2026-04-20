@@ -45,7 +45,9 @@ export const CexPurchaseFlow: React.FC<{
 
     try {
       // 1. Create escrow in smart contract
-      const escrowResponse = await fetch('/api/cex/initiate-purchase', {
+      const escrowResponse = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
+      /*
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -59,11 +61,14 @@ export const CexPurchaseFlow: React.FC<{
           paymentAmount: calculateRequiredAmount(nft.price, selectedToken),
         }),
       });
+      */
 
       const { escrowId, depositAddress } = await escrowResponse.json();
 
       // 2. Initiate Binance withdrawal to deposit address
-      const withdrawalResponse = await fetch('/api/binance/withdraw', {
+      const withdrawalResponse = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
+      /*
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -74,6 +79,7 @@ export const CexPurchaseFlow: React.FC<{
           network: 'EGLD', // MultiversX network
         }),
       });
+      */
 
       // 3. Poll for completion
       await pollForCompletion(escrowId);
@@ -101,7 +107,7 @@ export const CexPurchaseFlow: React.FC<{
       const check = async () => {
         attempts++;
         
-        const response = await fetch(`/api/cex/escrow/${escrowId}`);
+        const response = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
         const { status } = await response.json();
 
         if (status === 'Completed') {

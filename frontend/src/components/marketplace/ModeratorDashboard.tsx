@@ -23,17 +23,20 @@ export const ModeratorDashboard: React.FC = () => {
   const { data: reports } = useQuery({
     queryKey: ['reports', activeTab],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/reports?status=${activeTab}`);
+      const res = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
       return res.json();
     },
   });
 
   const handleResolve = async (reportId: number, isValid: boolean, notes: string) => {
-    await fetch('/api/admin/resolve-report', {
+    await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
+    /*
+    {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ reportId, isValid, notes }),
     });
+    */
   };
 
   return (

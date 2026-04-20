@@ -113,3 +113,4 @@ Thumbs.db
 # Keep compiled contract output but ignore build artifacts
 /contracts/**/target/
 !/contracts/**/output/*.wasm
+backend/.env

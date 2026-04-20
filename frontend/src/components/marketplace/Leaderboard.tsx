@@ -29,7 +29,7 @@ export const Leaderboard: React.FC<{
   const { data: leaderboard } = useQuery({
     queryKey: ['leaderboard', competitionId],
     queryFn: async () => {
-      const res = await fetch(`/api/competition/${competitionId}/leaderboard`);
+      const res = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
       return res.json();
     },
     refetchInterval: 60000, // Refresh every minute
@@ -38,7 +38,7 @@ export const Leaderboard: React.FC<{
   const { data: prizes } = useQuery({
     queryKey: ['prizes', competitionId],
     queryFn: async () => {
-      const res = await fetch(`/api/competition/${competitionId}/prizes`);
+      const res = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
       return res.json();
     },
   });

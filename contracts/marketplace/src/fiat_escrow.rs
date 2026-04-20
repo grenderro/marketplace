@@ -313,20 +313,26 @@ pub trait FiatEscrowModule:
         fiat_currency: &ManagedBuffer,
         crypto_token: &TokenIdentifier,
     ) -> BigUint {
-        // In production, this would query price oracle
-        // For now, simplified calculation
+        // In production, this MUST query a price oracle.
+        // This simplified version uses integer-only arithmetic.
+        // Prices are in cents per token atomic unit (1e18).
         
-        let fiat_amount_f64 = fiat_amount.to_u64().unwrap_or(0) as f64 / 100.0; // Convert cents to dollars
+        // Mock prices: EGLD = $40.00, Stablecoins = $1.00
+        // Price per atomic unit = ($price * 100 cents) / 1e18
+        // crypto_amount = fiat_cents * 1e18 / (price_usd * 100)
         
-        // Mock prices (would come from oracle)
-        let crypto_price_usd = if crypto_token.to_string() == "EGLD" {
-            40.0 // $40 per EGLD
-        } else {
-            1.0 // Stablecoins
-        };
-
-        let crypto_amount = (fiat_amount_f64 / crypto_price_usd * 1e18) as u64;
-        BigUint::from(crypto_amount)
+        let fiat_cents = fiat_amount.clone();
+        let is_egld = crypto_token.to_string() == "EGLD";
+        
+        // EGLD: $40 = 4000 cents. 1 EGLD = 1e18 atomic units.
+        // crypto = fiat_cents * 1e18 / 4000
+        // Stable: $1 = 100 cents. crypto = fiat_cents * 1e18 / 100
+        
+        let price_cents_per_token: u64 = if is_egld { 4000 } else { 100 };
+        let atomic_units_per_token: BigUint = BigUint::from(10u64).pow(18);
+        
+        let crypto_amount = (fiat_cents * atomic_units_per_token) / price_cents_per_token;
+        crypto_amount
     }
 
     fn get_provider_fee_percent(&self, provider: &FiatProvider) -> u64 {

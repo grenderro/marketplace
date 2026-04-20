@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { ArrowDownUp } from 'lucide-react';
 import { useSdk } from '../../../components/stubs/SdkStubs';
 import MarketplaceNav from '../../../components/marketplace/MarketplaceNav';
+import ESDTCompetitionBanner from '../../../components/marketplace/ESDTCompetitionBanner';
+import SwapWidget from '../../../components/marketplace/SwapWidget';
 
 interface Token {
   id: string;
@@ -17,6 +20,8 @@ export default function ESDTMarketplace() {
   const { isAuthenticated } = useSdk();
   const [isMobile, setIsMobile] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [swapOpen, setSwapOpen] = useState(false);
+  const [swapToken, setSwapToken] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -42,6 +47,8 @@ export default function ESDTMarketplace() {
         margin: '0 auto',
         padding: isMobile ? '1rem 0.5rem' : '2rem'
       }}>
+        <ESDTCompetitionBanner />
+
         {/* Header */}
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
@@ -238,23 +245,64 @@ export default function ESDTMarketplace() {
 
               {/* Trade Button */}
               <div style={{ textAlign: 'right' }}>
-                <button style={{
-                  padding: isMobile ? '0.5rem 1rem' : '0.5rem 1.25rem',
-                  background: 'rgba(0, 212, 255, 0.1)',
-                  border: '1px solid rgba(0, 212, 255, 0.3)',
-                  borderRadius: '8px',
-                  color: '#00d4ff',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  fontSize: isMobile ? '0.8rem' : '0.875rem',
-                  whiteSpace: 'nowrap'
-                }}>
+                <button
+                  onClick={() => {
+                    setSwapToken(token.ticker);
+                    setSwapOpen(true);
+                  }}
+                  style={{
+                    padding: isMobile ? '0.5rem 1rem' : '0.5rem 1.25rem',
+                    background: 'rgba(0, 212, 255, 0.1)',
+                    border: '1px solid rgba(0, 212, 255, 0.3)',
+                    borderRadius: '8px',
+                    color: '#00d4ff',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    fontSize: isMobile ? '0.8rem' : '0.875rem',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
                   Trade
                 </button>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Floating Swap Button (Mobile) */}
+        {isMobile && (
+          <button
+            onClick={() => {
+              setSwapToken(undefined);
+              setSwapOpen(true);
+            }}
+            style={{
+              position: 'fixed',
+              bottom: '80px',
+              right: '16px',
+              width: '56px',
+              height: '56px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #00d4ff, #2dd4bf)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 20px rgba(0, 212, 255, 0.3)',
+              zIndex: 40,
+              cursor: 'pointer',
+            }}
+          >
+            <ArrowDownUp style={{ width: '24px', height: '24px', color: '#000' }} />
+          </button>
+        )}
+
+        {/* Swap Widget Modal */}
+        <SwapWidget
+          isOpen={swapOpen}
+          onClose={() => setSwapOpen(false)}
+          preselectedToken={swapToken}
+        />
       </div>
     </div>
   );

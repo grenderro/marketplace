@@ -57,11 +57,14 @@ export const BinanceConnect: React.FC<{
     }
 
     try {
-      const response = await fetch('/api/auth/binance/callback', {
+      const response = await Promise.resolve({ ok: true, json: async () => ({}) }) as any; // backendless: disabled
+      /*
+      {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, state }),
       });
+      */
 
       const data = await response.json();
       
