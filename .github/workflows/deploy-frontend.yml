@@ -42,6 +42,7 @@ jobs:
         env:
           CI: false
           NODE_OPTIONS: --max-old-space-size=4096
+          GENERATE_SOURCEMAP: false
 
       - name: Copy index.html to 404.html
         run: cp build/index.html build/404.html
