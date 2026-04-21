@@ -552,3 +552,10 @@ body {
     top: 0;
   }
 }
+
+/* Create Collection responsive grid */
+@media (min-width: 1024px) {
+  .create-grid {
+    grid-template-columns: 3fr 2fr !important;
+  }
+}
