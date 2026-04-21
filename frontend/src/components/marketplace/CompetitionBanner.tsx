@@ -112,94 +112,64 @@ export const CompetitionBanner: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl mb-6"
-      style={{ background: 'linear-gradient(135deg, #0c1220 0%, #0a0e17 50%, #111827 100%)' }}
+      className="relative overflow-hidden rounded-2xl mb-6 border"
+      style={{
+        background: 'linear-gradient(135deg, #001a25 0%, #002233 50%, #001a25 100%)',
+        borderColor: 'rgba(0, 212, 255, 0.3)',
+        boxShadow: '0 0 30px rgba(0, 212, 255, 0.08), inset 0 1px 0 rgba(0, 212, 255, 0.15)',
+      }}
     >
-      {/* Subtle top border glow */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent" />
-
-      {/* Background glow orb */}
-      <div className="absolute -top-16 -right-16 w-48 h-48 bg-cyan-500/5 rounded-full blur-3xl" />
-      <div className="absolute -bottom-12 -left-12 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl" />
-
-      <div className="relative p-5 sm:p-6">
-        {/* Top row: Title + Timer */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)', boxShadow: '0 0 20px rgba(0, 212, 255, 0.3)' }}>
-              <Trophy className="w-5 h-5 text-[#0a0e17]" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">{comp.name}</h3>
-                <span className="px-2 py-0.5 text-[10px] rounded-full font-bold flex items-center gap-1"
-                  style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff', border: '1px solid rgba(0, 212, 255, 0.25)' }}>
-                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00d4ff' }} />
-                  LIVE
-                </span>
-              </div>
-              <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>{comp.description}</p>
-            </div>
+      <div className="relative px-5 py-4">
+        {/* Title & Description - Centered */}
+        <div className="text-center mb-3">
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <Trophy className="w-4 h-4" style={{ color: '#00d4ff' }} />
+            <h3 className="text-base font-bold text-white">{comp.name}</h3>
+            <span className="px-2 py-0.5 text-[10px] rounded-full font-bold flex items-center gap-1"
+              style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff', border: '1px solid rgba(0, 212, 255, 0.3)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00d4ff' }} />
+              LIVE
+            </span>
           </div>
+          <p className="text-xs" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
+        </div>
 
+        {/* Horizontal Info Row */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mb-3">
           {/* Countdown */}
           {timeLeft && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border shrink-0"
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border"
               style={{
-                background: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.1)' : 'rgba(26, 35, 50, 0.6)',
-                borderColor: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.3)' : 'rgba(148, 163, 184, 0.1)',
-                backdropFilter: 'blur(8px)',
+                background: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 0, 0, 0.25)',
+                borderColor: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.3)' : 'rgba(0, 212, 255, 0.15)',
               }}>
-              <Clock className="w-4 h-4" style={{ color: timeLeft.isUrgent ? '#ef4444' : '#00d4ff' }} />
-              <div className="flex items-center gap-1 font-mono font-bold text-white text-sm">
-                {timeLeft.days > 0 && (
-                  <>
-                    <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.days).padStart(2, '0')}</span>
-                    <span style={{ color: '#64748b' }}>:</span>
-                  </>
-                )}
+              <Clock className="w-3.5 h-3.5" style={{ color: timeLeft.isUrgent ? '#ef4444' : '#00d4ff' }} />
+              <div className="flex items-center gap-0.5 font-mono font-bold text-white text-xs">
+                {timeLeft.days > 0 && <><span>{String(timeLeft.days).padStart(2, '0')}d</span><span style={{ color: 'rgba(0, 212, 255, 0.4)' }}>:</span></>}
                 <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.hours).padStart(2, '0')}</span>
-                <span style={{ color: '#64748b' }}>:</span>
+                <span style={{ color: 'rgba(0, 212, 255, 0.4)' }}>:</span>
                 <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.minutes).padStart(2, '0')}</span>
-                <span style={{ color: '#64748b' }}>:</span>
+                <span style={{ color: 'rgba(0, 212, 255, 0.4)' }}>:</span>
                 <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.seconds).padStart(2, '0')}</span>
               </div>
             </div>
           )}
+
+          {/* Stat Pills */}
+          <StatPill icon={<Users className="w-3.5 h-3.5" />} label="Traders" value={comp.totalParticipants.toLocaleString()} />
+          <StatPill icon={<TrendingUp className="w-3.5 h-3.5" />} label="Volume" value={`${volumeEGLD} EGLD`} />
+          <StatPill icon={<Flame className="w-3.5 h-3.5" />} label="Prize Pool" value={totalPrizeValue > 0 ? `${totalPrizeValue} EGLD+` : 'Exclusive'} />
+          <StatPill icon={<Zap className="w-3.5 h-3.5" />} label="Your Rank" value="--" highlight />
         </div>
 
-        {/* Stats Row */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
-          <StatBox icon={<Users className="w-4 h-4" style={{ color: '#00d4ff' }} />} label="Traders" value={comp.totalParticipants.toLocaleString()} />
-          <StatBox icon={<TrendingUp className="w-4 h-4" style={{ color: '#2dd4bf' }} />} label="Volume" value={`${volumeEGLD} EGLD`} />
-          <StatBox icon={<Flame className="w-4 h-4" style={{ color: '#f59e0b' }} />} label="Prize Pool" value={totalPrizeValue > 0 ? `${totalPrizeValue} EGLD+` : 'Exclusive Prizes'} />
-          <StatBox icon={<Zap className="w-4 h-4" style={{ color: '#8b5cf6' }} />} label="Your Rank" value="--" />
-        </div>
-
-        {/* Prize preview + CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl p-3 border"
-          style={{ background: 'rgba(26, 35, 50, 0.5)', borderColor: 'rgba(0, 212, 255, 0.1)' }}>
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {comp.prizes.slice(0, 3).map((prize, i) => (
-                <div key={prize.rank} className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold border-2"
-                  style={{
-                    background: i === 0 ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' : i === 1 ? 'linear-gradient(135deg, #9ca3af, #6b7280)' : 'linear-gradient(135deg, #f97316, #ea580c)',
-                    borderColor: '#0a0e17',
-                    color: '#0a0e17',
-                  }}>
-                  #{prize.rank}
-                </div>
-              ))}
-            </div>
-            <div>
-              <p className="text-sm text-white font-medium">Start trading to earn points</p>
-              <p className="text-xs" style={{ color: '#64748b' }}>Every buy, sell, and listing counts toward your score</p>
-            </div>
-          </div>
-          <button className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-[#0a0e17] hover:shadow-lg transition-all shrink-0"
-            style={{ background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)', boxShadow: '0 0 20px rgba(0, 212, 255, 0.2)' }}>
+        {/* CTA - Centered */}
+        <div className="flex justify-center">
+          <button className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all hover:shadow-lg"
+            style={{
+              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
+              color: '#001a25',
+              boxShadow: '0 0 20px rgba(0, 212, 255, 0.25)',
+            }}>
             Trade Now <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -210,17 +180,20 @@ export const CompetitionBanner: React.FC = () => {
 
 // ─── Subcomponents ─────────────────────────────────────────
 
-const StatBox: React.FC<{
+const StatPill: React.FC<{
   icon: React.ReactNode;
   label: string;
   value: string;
-}> = ({ icon, label, value }) => (
-  <div className="rounded-xl p-3 border" style={{ background: 'rgba(26, 35, 50, 0.6)', borderColor: 'rgba(148, 163, 184, 0.1)' }}>
-    <div className="flex items-center gap-1.5 mb-1">
-      {icon}
-      <span className="text-[10px] uppercase tracking-wider" style={{ color: '#64748b' }}>{label}</span>
-    </div>
-    <p className="text-white font-bold text-sm">{value}</p>
+  highlight?: boolean;
+}> = ({ icon, label, value, highlight }) => (
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+    style={{
+      background: highlight ? 'rgba(0, 212, 255, 0.1)' : 'rgba(0, 0, 0, 0.2)',
+      borderColor: highlight ? 'rgba(0, 212, 255, 0.25)' : 'rgba(0, 212, 255, 0.1)',
+    }}>
+    <span style={{ color: '#00d4ff' }}>{icon}</span>
+    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(0, 212, 255, 0.5)' }}>{label}</span>
+    <span className="text-xs font-bold text-white">{value}</span>
   </div>
 );
 
