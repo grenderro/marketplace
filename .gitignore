@@ -10,10 +10,12 @@ multiversx-marketplace/contracts/marketplace//output/*.txt
 # Wallets
 *.pem
 !*.pem.example
-*.json
+/wallet*.json
 !multiversx.json
 /wallet*
 !/wallet.example.json
+!frontend/public/competitions/*.json
+!frontend/src/abis/*.json
 
 # Node
 node_modules/
