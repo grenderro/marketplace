@@ -9,9 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: 'pages'
@@ -34,63 +32,23 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './frontend/package-lock.json'
 
-      - name: Verify environment
-        run: |
-          node --version
-          npm --version
-          ls -la node_modules/.bin/react-app-rewired || echo 'react-app-rewired not in .bin'
-          npx react-app-rewired --version || echo 'cannot run react-app-rewired'
-
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
       - name: Build
-        run: |
-          npm run build 2>&1
-          echo '--- Build step exit code:' $?
+        run: npm run build
         env:
           CI: false
           NODE_OPTIONS: --max-old-space-size=4096
           GENERATE_SOURCEMAP: false
           TSC_COMPILE_ON_ERROR: true
 
-      - name: Inspect build output
-        run: |
-          echo '--- CWD ---'
-          pwd
-          echo '--- frontend/build ---'
-          ls -la build/ 2>/dev/null || echo 'build/ not found'
-          echo '--- Root build ---'
-          ls -la ../build/ 2>/dev/null || echo '../build/ not found'
-          echo '--- Find index.html ---'
-          find . -name 'index.html' -type f 2>/dev/null || echo 'no index.html found'
-
       - name: Copy index.html to 404.html
-        run: |
-          if [ -f build/index.html ]; then
-            cp build/index.html build/404.html
-          else
-            echo 'WARNING: build/index.html not found, skipping cp'
-            # Create a minimal 404.html so deploy doesn't fail completely
-            mkdir -p build
-            echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>404</title></head><body><h1>Page Not Found</h1></body></html>' > build/404.html
-          fi
+        run: cp build/index.html build/404.html
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./frontend/build
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    steps:
       - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./frontend/build
+          force_orphan: true
