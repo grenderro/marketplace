@@ -92,39 +92,31 @@ export const ESDTCompetitionBanner: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-2xl mb-6 border"
+      className="rounded-2xl mb-6 border"
       style={{
         background: 'linear-gradient(135deg, #001a25 0%, #002233 50%, #001a25 100%)',
         borderColor: 'rgba(0, 212, 255, 0.3)',
         boxShadow: '0 0 30px rgba(0, 212, 255, 0.08), inset 0 1px 0 rgba(0, 212, 255, 0.15)',
       }}
     >
-      <div className="relative px-5 py-5">
-        {/* Title & Description - Centered */}
-        <div className="flex flex-col items-center mb-4">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Zap className="w-4 h-4 shrink-0" style={{ color: '#00d4ff' }} />
-            <h3 className="text-lg font-bold text-white text-center">{comp.name}</h3>
-            <span className="px-2 py-0.5 text-[10px] rounded-full font-bold flex items-center gap-1 shrink-0"
-              style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff', border: '1px solid rgba(0, 212, 255, 0.3)' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00d4ff' }} />
-              LIVE
-            </span>
-          </div>
-          <p className="text-xs text-center max-w-lg" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
+      <div className="px-5 py-5">
+        {/* Centered Title Block */}
+        <div className="text-center mb-5">
+          <h3 className="text-xl font-bold text-white mb-1">{comp.name}</h3>
+          <p className="text-sm" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
         </div>
 
-        {/* Progress Bar - Compact */}
+        {/* Progress Bar */}
         <div className="max-w-md mx-auto mb-4">
-          <div className="flex justify-between text-[10px] mb-1">
-            <span className="flex items-center gap-1" style={{ color: 'rgba(0, 212, 255, 0.5)' }}>
-              <Target className="w-3 h-3" style={{ color: '#00d4ff' }} /> Volume Progress
+          <div className="flex justify-between text-xs mb-1.5">
+            <span className="flex items-center gap-1 font-medium" style={{ color: 'rgba(0, 212, 255, 0.5)' }}>
+              <Target className="w-3.5 h-3.5" style={{ color: '#00d4ff' }} /> Volume Progress
             </span>
-            <span style={{ color: 'rgba(0, 212, 255, 0.6)' }}>
+            <span className="font-medium" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>
               {parseFloat(comp.currentVolume).toLocaleString()} / {parseFloat(comp.volumeTarget).toLocaleString()} EGLD
             </span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
+          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
@@ -135,35 +127,32 @@ export const ESDTCompetitionBanner: React.FC = () => {
           </div>
         </div>
 
-        {/* Horizontal Info Row */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
-          {/* Countdown */}
+        {/* Info as horizontal button row */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
+          {/* Timer Button */}
           {timeLeft && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border"
+            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border font-mono font-bold text-sm"
               style={{
-                background: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 0, 0, 0.25)',
-                borderColor: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.3)' : 'rgba(0, 212, 255, 0.15)',
+                background: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 212, 255, 0.08)',
+                borderColor: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.4)' : 'rgba(0, 212, 255, 0.25)',
+                color: timeLeft.isUrgent ? '#ef4444' : '#00d4ff',
               }}>
-              <Clock className="w-3.5 h-3.5" style={{ color: timeLeft.isUrgent ? '#ef4444' : '#00d4ff' }} />
-              <div className="flex items-center gap-0.5 font-mono font-bold text-white text-xs">
-                <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.hours).padStart(2, '0')}</span>
-                <span style={{ color: 'rgba(0, 212, 255, 0.4)' }}>:</span>
-                <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.minutes).padStart(2, '0')}</span>
-                <span style={{ color: 'rgba(0, 212, 255, 0.4)' }}>:</span>
-                <span style={{ color: timeLeft.isUrgent ? '#ef4444' : '#fff' }}>{String(timeLeft.seconds).padStart(2, '0')}</span>
-              </div>
+              <Clock className="w-4 h-4" />
+              <span>
+                {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
+              </span>
             </div>
           )}
 
-          <StatPill icon={<Trophy className="w-3.5 h-3.5" />} label="Prize Pool" value={`${comp.prizePool} ${comp.prizeToken}`} />
-          <StatPill icon={<BarChart3 className="w-3.5 h-3.5" />} label="Top Token" value={comp.topToken} />
-          <StatPill icon={<TrendingUp className="w-3.5 h-3.5" />} label="Participants" value={comp.participants.toLocaleString()} />
-          <StatPill icon={<Zap className="w-3.5 h-3.5" />} label="Progress" value={`${progress.toFixed(0)}%`} highlight />
+          <InfoButton icon={<Trophy className="w-4 h-4" />} label="Prize Pool" value={`${comp.prizePool} ${comp.prizeToken}`} />
+          <InfoButton icon={<BarChart3 className="w-4 h-4" />} label="Top Token" value={comp.topToken} />
+          <InfoButton icon={<TrendingUp className="w-4 h-4" />} label="Participants" value={comp.participants.toLocaleString()} />
+          <InfoButton icon={<Zap className="w-4 h-4" />} label="Progress" value={`${progress.toFixed(0)}%`} highlight />
         </div>
 
-        {/* CTA - Centered */}
-        <div className="flex justify-center">
-          <button className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold transition-all hover:shadow-lg"
+        {/* CTA */}
+        <div className="text-center">
+          <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all hover:shadow-lg"
             style={{
               background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
               color: '#001a25',
@@ -177,20 +166,20 @@ export const ESDTCompetitionBanner: React.FC = () => {
   );
 };
 
-const StatPill: React.FC<{
+const InfoButton: React.FC<{
   icon: React.ReactNode;
   label: string;
   value: string;
   highlight?: boolean;
 }> = ({ icon, label, value, highlight }) => (
-  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border"
+  <div className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm"
     style={{
-      background: highlight ? 'rgba(0, 212, 255, 0.1)' : 'rgba(0, 0, 0, 0.2)',
-      borderColor: highlight ? 'rgba(0, 212, 255, 0.25)' : 'rgba(0, 212, 255, 0.1)',
+      background: highlight ? 'rgba(0, 212, 255, 0.12)' : 'rgba(0, 0, 0, 0.25)',
+      borderColor: highlight ? 'rgba(0, 212, 255, 0.35)' : 'rgba(0, 212, 255, 0.15)',
     }}>
     <span style={{ color: '#00d4ff' }}>{icon}</span>
-    <span className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(0, 212, 255, 0.5)' }}>{label}</span>
-    <span className="text-xs font-bold text-white">{value}</span>
+    <span className="font-medium" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{label}:</span>
+    <span className="font-bold text-white">{value}</span>
   </div>
 );
 
