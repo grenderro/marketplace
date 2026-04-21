@@ -25,7 +25,7 @@ interface ESDTCompetition {
   participants: number;
 }
 
-const DEMO_COMPETITION: ESDTCompetition = {
+const DEMO: ESDTCompetition = {
   id: 1,
   name: 'ESDT Trading Sprint',
   description: 'Trade ESDT tokens and compete for the highest volume. Top traders win EGLD prizes!',
@@ -39,147 +39,116 @@ const DEMO_COMPETITION: ESDTCompetition = {
 };
 
 const useCountdown = (endTime: number) => {
-  const [timeLeft, setTimeLeft] = React.useState<{
-    hours: number;
-    minutes: number;
-    seconds: number;
-    isUrgent: boolean;
-  } | null>(null);
-
+  const [t, setT] = React.useState<{ h: number; m: number; s: number; urgent: boolean } | null>(null);
   React.useEffect(() => {
-    const update = () => {
+    const tick = () => {
       const diff = Math.max(0, endTime - Date.now() / 1000);
-      const hours = Math.floor(diff / 3600);
-      const minutes = Math.floor((diff % 3600) / 60);
-      const seconds = Math.floor(diff % 60);
-      setTimeLeft({ hours, minutes, seconds, isUrgent: diff < 3600 });
+      setT({ h: Math.floor(diff / 3600), m: Math.floor((diff % 3600) / 60), s: Math.floor(diff % 60), urgent: diff < 3600 });
     };
-    update();
-    const interval = setInterval(update, 1000);
-    return () => clearInterval(interval);
+    tick();
+    const i = setInterval(tick, 1000);
+    return () => clearInterval(i);
   }, [endTime]);
-
-  return timeLeft;
+  return t;
 };
 
 export const ESDTCompetitionBanner: React.FC = () => {
-  const { data: competition } = useQuery({
+  const { data: compData } = useQuery({
     queryKey: ['esdt-competition'],
     queryFn: async () => {
       const apiUrl = process.env.REACT_APP_API_URL;
       if (apiUrl && apiUrl !== 'https://devnet-api.multiversx.com') {
-        try {
-          const res = await fetch(`${apiUrl}/api/competition/esdt`);
-          if (res.ok) return res.json();
-        } catch { /* fallback */ }
+        try { const r = await fetch(`${apiUrl}/api/competition/esdt`); if (r.ok) return r.json(); } catch {}
       }
-      const res = await fetch('/competitions/esdt.json');
-      if (!res.ok) throw new Error('Failed to load');
-      return res.json();
+      const r = await fetch('/competitions/esdt.json');
+      if (!r.ok) throw new Error('Failed');
+      return r.json();
     },
     refetchInterval: 60000,
   });
 
-  const comp: ESDTCompetition = competition?.data || competition || DEMO_COMPETITION;
-  const timeLeft = useCountdown(comp.endTime);
-
-  const progress = Math.min(
-    100,
-    (parseFloat(comp.currentVolume) / parseFloat(comp.volumeTarget)) * 100
-  );
+  const comp: ESDTCompetition = compData?.data || compData || DEMO;
+  const time = useCountdown(comp.endTime);
+  const progress = Math.min(100, (parseFloat(comp.currentVolume) / parseFloat(comp.volumeTarget)) * 100);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl mb-6 border"
       style={{
         background: 'linear-gradient(135deg, #001a25 0%, #002233 50%, #001a25 100%)',
-        borderColor: 'rgba(0, 212, 255, 0.3)',
+        border: '1px solid rgba(0, 212, 255, 0.3)',
         boxShadow: '0 0 30px rgba(0, 212, 255, 0.08), inset 0 1px 0 rgba(0, 212, 255, 0.15)',
+        borderRadius: '1rem',
+        marginBottom: '1.5rem',
       }}
     >
-      <div className="px-5 py-5">
-        {/* Centered Title Block */}
-        <div className="text-center mb-5">
-          <h3 className="text-xl font-bold text-white mb-1">{comp.name}</h3>
-          <p className="text-sm" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
+      <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+
+        {/* Title — centered */}
+        <div style={{ textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', margin: '0 0 0.25rem 0' }}>{comp.name}</h3>
+          <p style={{ fontSize: '0.875rem', color: 'rgba(0, 212, 255, 0.6)', margin: 0 }}>{comp.description}</p>
         </div>
 
-        {/* Progress Bar */}
-        <div className="max-w-md mx-auto mb-4">
-          <div className="flex justify-between text-xs mb-1.5">
-            <span className="flex items-center gap-1 font-medium" style={{ color: 'rgba(0, 212, 255, 0.5)' }}>
-              <Target className="w-3.5 h-3.5" style={{ color: '#00d4ff' }} /> Volume Progress
+        {/* Progress bar */}
+        <div style={{ width: '100%', maxWidth: '28rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginBottom: '0.375rem' }}>
+            <span style={{ color: 'rgba(0,212,255,0.5)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <Target size={14} style={{ color: '#00d4ff' }} /> Volume Progress
             </span>
-            <span className="font-medium" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>
+            <span style={{ color: 'rgba(0,212,255,0.6)' }}>
               {parseFloat(comp.currentVolume).toLocaleString()} / {parseFloat(comp.volumeTarget).toLocaleString()} EGLD
             </span>
           </div>
-          <div className="h-2 rounded-full overflow-hidden" style={{ background: 'rgba(0, 0, 0, 0.3)' }}>
+          <div style={{ height: '0.375rem', borderRadius: '9999px', overflow: 'hidden', background: 'rgba(0,0,0,0.3)' }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
               transition={{ duration: 1.2, ease: 'easeOut' }}
-              className="h-full rounded-full"
-              style={{ background: 'linear-gradient(90deg, #00d4ff 0%, #2dd4bf 100%)' }}
+              style={{ height: '100%', borderRadius: '9999px', background: 'linear-gradient(90deg, #00d4ff 0%, #2dd4bf 100%)' }}
             />
           </div>
         </div>
 
-        {/* Info as horizontal button row */}
-        <div className="flex flex-wrap items-center justify-center gap-2 mb-5">
-          {/* Timer Button */}
-          {timeLeft && (
-            <div className="flex items-center gap-2 px-4 py-2 rounded-xl border font-mono font-bold text-sm"
-              style={{
-                background: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 212, 255, 0.08)',
-                borderColor: timeLeft.isUrgent ? 'rgba(239, 68, 68, 0.4)' : 'rgba(0, 212, 255, 0.25)',
-                color: timeLeft.isUrgent ? '#ef4444' : '#00d4ff',
-              }}>
-              <Clock className="w-4 h-4" />
-              <span>
-                {String(timeLeft.hours).padStart(2, '0')}:{String(timeLeft.minutes).padStart(2, '0')}:{String(timeLeft.seconds).padStart(2, '0')}
-              </span>
+        {/* Horizontal info buttons */}
+        <div style={{ display: 'flex', flexWrap: 'nowrap', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', overflowX: 'auto', width: '100%' }}>
+          {time && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.875rem', borderRadius: '0.75rem', border: `1px solid ${time.urgent ? 'rgba(239,68,68,0.4)' : 'rgba(0,212,255,0.25)'}`,
+              background: time.urgent ? 'rgba(239,68,68,0.12)' : 'rgba(0,212,255,0.08)', color: time.urgent ? '#ef4444' : '#00d4ff', fontFamily: 'monospace', fontWeight: 700, fontSize: '0.875rem', whiteSpace: 'nowrap', flexShrink: 0
+            }}>
+              <Clock size={16} />
+              {String(time.h).padStart(2,'0')}:{String(time.m).padStart(2,'0')}:{String(time.s).padStart(2,'0')}
             </div>
           )}
-
-          <InfoButton icon={<Trophy className="w-4 h-4" />} label="Prize Pool" value={`${comp.prizePool} ${comp.prizeToken}`} />
-          <InfoButton icon={<BarChart3 className="w-4 h-4" />} label="Top Token" value={comp.topToken} />
-          <InfoButton icon={<TrendingUp className="w-4 h-4" />} label="Participants" value={comp.participants.toLocaleString()} />
-          <InfoButton icon={<Zap className="w-4 h-4" />} label="Progress" value={`${progress.toFixed(0)}%`} highlight />
+          <InfoBtn icon={<Trophy size={16} />} label="Prize Pool" value={`${comp.prizePool} ${comp.prizeToken}`} />
+          <InfoBtn icon={<BarChart3 size={16} />} label="Top Token" value={comp.topToken} />
+          <InfoBtn icon={<TrendingUp size={16} />} label="Participants" value={comp.participants.toLocaleString()} />
+          <InfoBtn icon={<Zap size={16} />} label="Progress" value={`${progress.toFixed(0)}%`} highlight />
         </div>
 
-        {/* CTA */}
-        <div className="text-center">
-          <button className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all hover:shadow-lg"
-            style={{
-              background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)',
-              color: '#001a25',
-              boxShadow: '0 0 20px rgba(0, 212, 255, 0.25)',
-            }}>
-            Start Trading <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
+        {/* CTA — centered */}
+        <button style={{
+          display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.625rem 1.5rem', borderRadius: '0.75rem', fontSize: '0.875rem', fontWeight: 700, border: 'none', cursor: 'pointer',
+          background: 'linear-gradient(135deg, #00d4ff 0%, #2dd4bf 100%)', color: '#001a25', boxShadow: '0 0 20px rgba(0, 212, 255, 0.25)'
+        }}>
+          Start Trading <ArrowRight size={16} />
+        </button>
+
       </div>
     </motion.div>
   );
 };
 
-const InfoButton: React.FC<{
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  highlight?: boolean;
-}> = ({ icon, label, value, highlight }) => (
-  <div className="flex items-center gap-2 px-4 py-2 rounded-xl border text-sm"
-    style={{
-      background: highlight ? 'rgba(0, 212, 255, 0.12)' : 'rgba(0, 0, 0, 0.25)',
-      borderColor: highlight ? 'rgba(0, 212, 255, 0.35)' : 'rgba(0, 212, 255, 0.15)',
-    }}>
+const InfoBtn: React.FC<{ icon: React.ReactNode; label: string; value: string; highlight?: boolean }> = ({ icon, label, value, highlight }) => (
+  <div style={{
+    display: 'flex', alignItems: 'center', gap: '0.375rem', padding: '0.5rem 0.875rem', borderRadius: '0.75rem', border: `1px solid ${highlight ? 'rgba(0,212,255,0.35)' : 'rgba(0,212,255,0.15)'}`,
+    background: highlight ? 'rgba(0,212,255,0.1)' : 'rgba(0,0,0,0.25)', fontSize: '0.875rem', whiteSpace: 'nowrap', flexShrink: 0
+  }}>
     <span style={{ color: '#00d4ff' }}>{icon}</span>
-    <span className="font-medium" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{label}:</span>
-    <span className="font-bold text-white">{value}</span>
+    <span style={{ color: 'rgba(0,212,255,0.55)', fontWeight: 500 }}>{label}:</span>
+    <span style={{ color: '#fff', fontWeight: 700 }}>{value}</span>
   </div>
 );
 
