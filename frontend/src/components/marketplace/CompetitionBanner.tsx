@@ -121,17 +121,17 @@ export const CompetitionBanner: React.FC = () => {
     >
       <div className="relative px-5 py-5">
         {/* Title & Description - Centered */}
-        <div className="text-center mb-4">
-          <div className="inline-flex items-center justify-center gap-2 mb-2">
-            <Trophy className="w-4 h-4" style={{ color: '#00d4ff' }} />
-            <h3 className="text-lg font-bold text-white">{comp.name}</h3>
-            <span className="px-2 py-0.5 text-[10px] rounded-full font-bold flex items-center gap-1"
+        <div className="flex flex-col items-center mb-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Trophy className="w-4 h-4 shrink-0" style={{ color: '#00d4ff' }} />
+            <h3 className="text-lg font-bold text-white text-center">{comp.name}</h3>
+            <span className="px-2 py-0.5 text-[10px] rounded-full font-bold flex items-center gap-1 shrink-0"
               style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff', border: '1px solid rgba(0, 212, 255, 0.3)' }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00d4ff' }} />
               LIVE
             </span>
           </div>
-          <p className="text-xs max-w-lg mx-auto" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
+          <p className="text-xs text-center max-w-lg" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
         </div>
 
         {/* Horizontal Info Row */}
