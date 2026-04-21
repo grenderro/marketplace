@@ -99,23 +99,23 @@ export const ESDTCompetitionBanner: React.FC = () => {
         boxShadow: '0 0 30px rgba(0, 212, 255, 0.08), inset 0 1px 0 rgba(0, 212, 255, 0.15)',
       }}
     >
-      <div className="relative px-5 py-4">
+      <div className="relative px-5 py-5">
         {/* Title & Description - Centered */}
-        <div className="text-center mb-3">
-          <div className="flex items-center justify-center gap-2 mb-1">
+        <div className="text-center mb-4">
+          <div className="inline-flex items-center justify-center gap-2 mb-2">
             <Zap className="w-4 h-4" style={{ color: '#00d4ff' }} />
-            <h3 className="text-base font-bold text-white">{comp.name}</h3>
+            <h3 className="text-lg font-bold text-white">{comp.name}</h3>
             <span className="px-2 py-0.5 text-[10px] rounded-full font-bold flex items-center gap-1"
               style={{ background: 'rgba(0, 212, 255, 0.15)', color: '#00d4ff', border: '1px solid rgba(0, 212, 255, 0.3)' }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#00d4ff' }} />
               LIVE
             </span>
           </div>
-          <p className="text-xs" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
+          <p className="text-xs max-w-lg mx-auto" style={{ color: 'rgba(0, 212, 255, 0.6)' }}>{comp.description}</p>
         </div>
 
         {/* Progress Bar - Compact */}
-        <div className="max-w-md mx-auto mb-3">
+        <div className="max-w-md mx-auto mb-4">
           <div className="flex justify-between text-[10px] mb-1">
             <span className="flex items-center gap-1" style={{ color: 'rgba(0, 212, 255, 0.5)' }}>
               <Target className="w-3 h-3" style={{ color: '#00d4ff' }} /> Volume Progress
@@ -136,7 +136,7 @@ export const ESDTCompetitionBanner: React.FC = () => {
         </div>
 
         {/* Horizontal Info Row */}
-        <div className="flex flex-wrap items-center justify-center gap-3 mb-3">
+        <div className="flex flex-wrap items-center justify-center gap-3 mb-4">
           {/* Countdown */}
           {timeLeft && (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border"
