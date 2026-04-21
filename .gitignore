@@ -12,8 +12,8 @@ multiversx-marketplace/contracts/marketplace//output/*.txt
 !*.pem.example
 *.json
 !multiversx.json
-wallet*
-!wallet.example.json
+/wallet*
+!/wallet.example.json
 
 # Node
 node_modules/
