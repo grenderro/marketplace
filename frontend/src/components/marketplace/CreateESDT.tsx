@@ -7,8 +7,8 @@ import {
   AlertCircle,
   Wallet,
   Coins,
-  Tag,
-  Settings,
+  Layers,
+  Sparkles,
   Shield,
   Flame,
   Pause,
@@ -16,12 +16,11 @@ import {
   Trash2,
   UserCheck,
   ArrowUpCircle,
-  Sparkles,
   Loader2,
   Zap,
   Fuel,
   Wrench,
-  Layers,
+  Settings,
 } from 'lucide-react';
 import { useGetAccountInfo, useGetNetworkConfig } from '../../hooks/sdkStubs';
 import {
@@ -83,6 +82,18 @@ const INITIAL_DATA: ESDTFormData = {
   },
 };
 
+// ─── Theme Constants ───────────────────────────────────────
+const CARD_BG = '#12121a';
+const CARD_BORDER = 'rgba(148,163,184,0.1)';
+const INPUT_BG = '#1a1a25';
+const INPUT_BORDER = 'rgba(148,163,184,0.1)';
+const INPUT_FOCUS = '#00d4ff';
+const TEXT_PRIMARY = '#ffffff';
+const TEXT_SECONDARY = '#94a3b8';
+const TEXT_MUTED = '#64748b';
+const CYAN = '#00d4ff';
+const CYAN_GLOW = '0 0 15px rgba(0,212,255,0.2)';
+
 // ─── Token Type Config ─────────────────────────────────────
 const TOKEN_TYPES = [
   {
@@ -91,7 +102,6 @@ const TOKEN_TYPES = [
     subtitle: 'Standard cryptocurrency',
     description: 'Interchangeable 1:1. Perfect for governance, utility tokens, and stablecoins.',
     icon: Coins,
-    color: 'cyan',
     examples: ['USDC', 'MEX', 'ZPAY'],
     features: ['Divisible', 'Transferable', 'Low gas'],
   },
@@ -101,7 +111,6 @@ const TOKEN_TYPES = [
     subtitle: 'Quantity-based items',
     description: 'Multiple copies of the same item. Event tickets, game items, memberships.',
     icon: Layers,
-    color: 'purple',
     examples: ['Tickets', 'Badges', 'Coupons'],
     features: ['Multiple copies', 'Same ID', 'Batch transfer'],
   },
@@ -111,7 +120,6 @@ const TOKEN_TYPES = [
     subtitle: 'DeFi special tokens',
     description: 'LP positions, staking derivatives, and wrapped assets with metadata.',
     icon: Sparkles,
-    color: 'amber',
     examples: ['LP tokens', 'Staking derivs', 'Wrapped assets'],
     features: ['Metadata', 'DeFi native', 'Composable'],
   },
@@ -242,7 +250,6 @@ export const CreateESDT: React.FC = () => {
     try {
       const nonce = await getNonce(address);
 
-      // Build ESDT issuance transaction
       const props = formData.properties;
       const propertyFlags = [
         props.canMint,
@@ -299,29 +306,37 @@ export const CreateESDT: React.FC = () => {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Create ESDT Token</h1>
-        <p className="text-gray-400">Deploy your own cryptocurrency on MultiversX</p>
+        <p style={{ color: TEXT_SECONDARY }}>Deploy your own cryptocurrency on MultiversX</p>
       </div>
 
       {/* Wallet Balance Bar */}
       <div
-        className={`flex items-center justify-between px-6 py-3 rounded-xl mb-8 border ${
-          hasEnoughBalance
-            ? 'bg-green-500/10 border-green-500/30'
-            : 'bg-red-500/10 border-red-500/30'
-        }`}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0.75rem 1.5rem',
+          borderRadius: '0.75rem',
+          marginBottom: '2rem',
+          border: `1px solid ${hasEnoughBalance ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+          backgroundColor: hasEnoughBalance ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+        }}
       >
         <div className="flex items-center gap-3">
-          <Wallet className={`w-5 h-5 ${hasEnoughBalance ? 'text-green-400' : 'text-red-400'}`} />
-          <span className="text-sm text-gray-300">
+          <Wallet
+            className="w-5 h-5 shrink-0"
+            style={{ color: hasEnoughBalance ? '#22c55e' : '#ef4444' }}
+          />
+          <span className="text-sm" style={{ color: TEXT_SECONDARY }}>
             Wallet: <strong className="text-white">{walletBalance.toFixed(4)} EGLD</strong>
           </span>
         </div>
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-gray-400">
+          <span style={{ color: TEXT_SECONDARY }}>
             Cost: <strong className="text-white">{deploymentCost} EGLD</strong>
           </span>
           {!hasEnoughBalance && (
-            <span className="text-red-400 flex items-center gap-1">
+            <span className="flex items-center gap-1" style={{ color: '#ef4444' }}>
               <AlertCircle className="w-4 h-4" /> Insufficient
             </span>
           )}
@@ -336,40 +351,42 @@ export const CreateESDT: React.FC = () => {
             {TOKEN_TYPES.map((card) => {
               const Icon = card.icon;
               const isActive = formData.tokenType === card.type;
-              const colorClasses =
-                card.color === 'cyan'
-                  ? 'border-cyan-400 bg-cyan-400/10 text-cyan-400'
-                  : card.color === 'purple'
-                  ? 'border-purple-400 bg-purple-400/10 text-purple-400'
-                  : 'border-amber-400 bg-amber-400/10 text-amber-400';
-
               return (
                 <button
                   key={card.type}
                   onClick={() => setTokenType(card.type)}
-                  className={`p-5 rounded-2xl border-2 text-left transition-all relative overflow-hidden ${
-                    isActive
-                      ? colorClasses
-                      : 'border-gray-800 bg-[#12121a] hover:border-gray-700'
-                  }`}
+                  style={{
+                    padding: '1.25rem',
+                    borderRadius: '1rem',
+                    textAlign: 'left',
+                    transition: 'all 0.2s',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    border: isActive ? `1px solid ${CYAN}` : `1px solid ${CARD_BORDER}`,
+                    backgroundColor: isActive ? 'rgba(0,212,255,0.06)' : CARD_BG,
+                    boxShadow: isActive ? CYAN_GLOW : 'none',
+                  }}
                 >
                   {isActive && (
                     <div className="absolute top-3 right-3">
-                      <Check className="w-5 h-5" />
+                      <Check className="w-5 h-5" style={{ color: CYAN }} />
                     </div>
                   )}
                   <Icon
-                    className={`w-8 h-8 mb-3 ${isActive ? '' : 'text-gray-500'}`}
+                    className="w-8 h-8 mb-3"
+                    style={{ color: isActive ? CYAN : TEXT_MUTED }}
                   />
                   <h3 className="text-base font-bold text-white mb-1">{card.title}</h3>
-                  <p className="text-xs text-gray-400 mb-2">{card.subtitle}</p>
+                  <p className="text-xs mb-2" style={{ color: TEXT_MUTED }}>{card.subtitle}</p>
                   <div className="flex flex-wrap gap-1">
                     {card.features.map((f) => (
                       <span
                         key={f}
-                        className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          isActive ? 'bg-white/10' : 'bg-gray-800 text-gray-500'
-                        }`}
+                        className="text-[10px] px-2 py-0.5 rounded-full"
+                        style={{
+                          backgroundColor: isActive ? 'rgba(0,212,255,0.1)' : 'rgba(148,163,184,0.08)',
+                          color: isActive ? CYAN : TEXT_MUTED,
+                        }}
                       >
                         {f}
                       </span>
@@ -385,15 +402,21 @@ export const CreateESDT: React.FC = () => {
             key={formData.tokenType}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-[#12121a] rounded-xl p-4 border border-gray-800"
+            style={{
+              backgroundColor: CARD_BG,
+              borderRadius: '0.75rem',
+              padding: '1rem',
+              border: `1px solid ${CARD_BORDER}`,
+            }}
           >
-            <p className="text-sm text-gray-400">{selectedType.description}</p>
+            <p className="text-sm" style={{ color: TEXT_SECONDARY }}>{selectedType.description}</p>
             <div className="flex items-center gap-2 mt-2">
-              <span className="text-xs text-gray-500">Examples:</span>
+              <span className="text-xs" style={{ color: TEXT_MUTED }}>Examples:</span>
               {selectedType.examples.map((ex) => (
                 <span
                   key={ex}
-                  className="text-xs px-2 py-0.5 bg-gray-800 text-gray-400 rounded-full"
+                  className="text-xs px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: INPUT_BG, color: TEXT_SECONDARY }}
                 >
                   {ex}
                 </span>
@@ -402,28 +425,49 @@ export const CreateESDT: React.FC = () => {
           </motion.div>
 
           {/* Main Form */}
-          <div className="bg-[#12121a] rounded-2xl p-8 border border-gray-800 space-y-6">
+          <div
+            style={{
+              backgroundColor: CARD_BG,
+              borderRadius: '1rem',
+              padding: '2rem',
+              border: `1px solid ${CARD_BORDER}`,
+            }}
+            className="space-y-6"
+          >
             <div className="grid md:grid-cols-2 gap-6">
               <Field
                 label="Token Name *"
                 error={errors.name}
                 touched={touched.name}
-                hint="Display name shown in wallets and explorers"
+                hint="Display name shown in wallets"
               >
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => updateField('name', e.target.value)}
-                  onBlur={() => markTouched('name')}
                   placeholder="e.g., MyToken"
                   maxLength={50}
-                  className={`w-full bg-[#1a1a25] border rounded-xl px-4 py-3 text-white focus:outline-none transition-colors ${
-                    touched.name && errors.name
-                      ? 'border-red-500 focus:border-red-400'
-                      : 'border-gray-700 focus:border-cyan-400'
-                  }`}
+                  style={{
+                    width: '100%',
+                    backgroundColor: INPUT_BG,
+                    border: `1px solid ${touched.name && errors.name ? '#ef4444' : INPUT_BORDER}`,
+                    borderRadius: '0.75rem',
+                    padding: '0.75rem 1rem',
+                    color: TEXT_PRIMARY,
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = INPUT_FOCUS;
+                    e.target.style.boxShadow = '0 0 0 2px rgba(0,212,255,0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = touched.name && errors.name ? '#ef4444' : INPUT_BORDER;
+                    e.target.style.boxShadow = 'none';
+                    markTouched('name');
+                  }}
                 />
-                <p className="text-xs text-gray-500 mt-1 text-right">
+                <p className="text-xs mt-1 text-right" style={{ color: TEXT_MUTED }}>
                   {formData.name.length}/50
                 </p>
               </Field>
@@ -432,7 +476,7 @@ export const CreateESDT: React.FC = () => {
                 label="Token Ticker *"
                 error={errors.ticker}
                 touched={touched.ticker}
-                hint="3-10 uppercase letters. Cannot be changed."
+                hint="3-10 uppercase letters. Cannot change."
               >
                 <input
                   type="text"
@@ -440,14 +484,28 @@ export const CreateESDT: React.FC = () => {
                   onChange={(e) =>
                     updateField('ticker', e.target.value.toUpperCase().replace(/[^A-Z]/g, ''))
                   }
-                  onBlur={() => markTouched('ticker')}
                   placeholder="e.g., MYTKN"
                   maxLength={10}
-                  className={`w-full bg-[#1a1a25] border rounded-xl px-4 py-3 text-white focus:outline-none font-mono transition-colors ${
-                    touched.ticker && errors.ticker
-                      ? 'border-red-500 focus:border-red-400'
-                      : 'border-gray-700 focus:border-cyan-400'
-                  }`}
+                  className="font-mono"
+                  style={{
+                    width: '100%',
+                    backgroundColor: INPUT_BG,
+                    border: `1px solid ${touched.ticker && errors.ticker ? '#ef4444' : INPUT_BORDER}`,
+                    borderRadius: '0.75rem',
+                    padding: '0.75rem 1rem',
+                    color: TEXT_PRIMARY,
+                    outline: 'none',
+                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = INPUT_FOCUS;
+                    e.target.style.boxShadow = '0 0 0 2px rgba(0,212,255,0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = touched.ticker && errors.ticker ? '#ef4444' : INPUT_BORDER;
+                    e.target.style.boxShadow = 'none';
+                    markTouched('ticker');
+                  }}
                 />
               </Field>
             </div>
@@ -468,13 +526,26 @@ export const CreateESDT: React.FC = () => {
                     type="number"
                     value={formData.initialSupply}
                     onChange={(e) => updateField('initialSupply', e.target.value)}
-                    onBlur={() => markTouched('initialSupply')}
                     min="0"
-                    className={`w-full bg-[#1a1a25] border rounded-xl px-4 py-3 text-white focus:outline-none transition-colors ${
-                      touched.initialSupply && errors.initialSupply
-                        ? 'border-red-500 focus:border-red-400'
-                        : 'border-gray-700 focus:border-cyan-400'
-                    }`}
+                    style={{
+                      width: '100%',
+                      backgroundColor: INPUT_BG,
+                      border: `1px solid ${touched.initialSupply && errors.initialSupply ? '#ef4444' : INPUT_BORDER}`,
+                      borderRadius: '0.75rem',
+                      padding: '0.75rem 1rem',
+                      color: TEXT_PRIMARY,
+                      outline: 'none',
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                    }}
+                    onFocus={(e) => {
+                      e.target.style.borderColor = INPUT_FOCUS;
+                      e.target.style.boxShadow = '0 0 0 2px rgba(0,212,255,0.1)';
+                    }}
+                    onBlur={(e) => {
+                      e.target.style.borderColor = touched.initialSupply && errors.initialSupply ? '#ef4444' : INPUT_BORDER;
+                      e.target.style.boxShadow = 'none';
+                      markTouched('initialSupply');
+                    }}
                   />
                 </Field>
 
@@ -485,11 +556,19 @@ export const CreateESDT: React.FC = () => {
                     max="18"
                     value={formData.decimals}
                     onChange={(e) => updateField('decimals', parseInt(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                    style={{
+                      width: '100%',
+                      height: '8px',
+                      appearance: 'none',
+                      borderRadius: '9999px',
+                      background: `linear-gradient(to right, ${CYAN} 0%, ${CYAN} ${(formData.decimals / 18) * 100}%, ${INPUT_BG} ${(formData.decimals / 18) * 100}%, ${INPUT_BG} 100%)`,
+                      cursor: 'pointer',
+                      outline: 'none',
+                    }}
                   />
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs mt-1" style={{ color: TEXT_MUTED }}>
                     <span>0 (Whole)</span>
-                    <span className="text-cyan-400 font-medium">{formData.decimals}</span>
+                    <span style={{ color: CYAN, fontWeight: 500 }}>{formData.decimals}</span>
                     <span>18 (Standard)</span>
                   </div>
                 </Field>
@@ -499,9 +578,11 @@ export const CreateESDT: React.FC = () => {
             {/* Properties */}
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Settings className="w-4 h-4 text-gray-400" />
-                <h3 className="text-sm font-semibold text-gray-400">Token Properties</h3>
-                <span className="text-xs text-gray-600">Hover for details</span>
+                <Settings className="w-4 h-4" style={{ color: TEXT_SECONDARY }} />
+                <h3 className="text-sm font-semibold" style={{ color: TEXT_SECONDARY }}>
+                  Token Properties
+                </h3>
+                <span className="text-xs" style={{ color: TEXT_MUTED }}>Hover for details</span>
               </div>
               <div className="grid md:grid-cols-2 gap-3">
                 {Object.entries(formData.properties).map(([key, value]) => {
@@ -510,11 +591,17 @@ export const CreateESDT: React.FC = () => {
                   return (
                     <Tooltip key={key} text={meta.desc} risk={meta.risk}>
                       <label
-                        className={`flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all border ${
-                          value
-                            ? 'bg-cyan-500/10 border-cyan-500/30'
-                            : 'bg-[#1a1a25] border-transparent hover:bg-[#252535]'
-                        }`}
+                        className="flex items-center gap-3 p-4 rounded-xl cursor-pointer transition-all"
+                        style={{
+                          border: value ? `1px solid rgba(0,212,255,0.2)` : `1px solid transparent`,
+                          backgroundColor: value ? 'rgba(0,212,255,0.04)' : INPUT_BG,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!value) (e.currentTarget as HTMLLabelElement).style.backgroundColor = '#22222e';
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!value) (e.currentTarget as HTMLLabelElement).style.backgroundColor = INPUT_BG;
+                        }}
                       >
                         <input
                           type="checkbox"
@@ -525,9 +612,13 @@ export const CreateESDT: React.FC = () => {
                               [key]: e.target.checked,
                             })
                           }
-                          className="w-5 h-5 rounded border-gray-600 bg-[#12121a] text-cyan-500 shrink-0"
+                          className="w-5 h-5 rounded shrink-0"
+                          style={{
+                            accentColor: CYAN,
+                            cursor: 'pointer',
+                          }}
                         />
-                        <Icon className={`w-5 h-5 shrink-0 ${value ? 'text-cyan-400' : 'text-gray-500'}`} />
+                        <Icon className="w-5 h-5 shrink-0" style={{ color: value ? CYAN : TEXT_MUTED }} />
                         <div className="min-w-0">
                           <p className={`text-sm font-medium ${value ? 'text-white' : 'text-gray-300'}`}>
                             {meta.label}
@@ -541,26 +632,59 @@ export const CreateESDT: React.FC = () => {
             </div>
 
             {/* Cost & Submit */}
-            <div className="bg-gradient-to-r from-cyan-500/10 to-purple-500/10 rounded-xl p-6 border border-cyan-400/20">
+            <div
+              style={{
+                background: 'linear-gradient(135deg, rgba(0,212,255,0.06), rgba(45,212,191,0.04))',
+                borderRadius: '0.75rem',
+                padding: '1.5rem',
+                border: `1px solid rgba(0,212,255,0.12)`,
+              }}
+            >
               <div className="flex justify-between items-center mb-4">
                 <div>
-                  <p className="text-sm text-gray-400">Deployment Cost</p>
+                  <p className="text-sm" style={{ color: TEXT_SECONDARY }}>Deployment Cost</p>
                   <p className="text-2xl font-bold text-white">{deploymentCost} EGLD</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-gray-400">Network Fee</p>
-                  <p className="text-lg text-cyan-400">~0.001 EGLD</p>
+                  <p className="text-sm" style={{ color: TEXT_SECONDARY }}>Network Fee</p>
+                  <p className="text-lg" style={{ color: CYAN }}>~0.001 EGLD</p>
                 </div>
               </div>
               {!hasEnoughBalance && (
-                <p className="text-red-400 text-sm mb-3 flex items-center gap-1">
+                <p className="text-sm mb-3 flex items-center gap-1" style={{ color: '#ef4444' }}>
                   <AlertCircle className="w-4 h-4" /> Insufficient balance to deploy
                 </p>
               )}
               <button
                 onClick={handleCreate}
                 disabled={isCreating || !hasEnoughBalance}
-                className="w-full py-4 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl font-bold text-white text-lg hover:shadow-[0_0_30px_rgba(0,212,255,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  borderRadius: '0.75rem',
+                  fontWeight: 700,
+                  fontSize: '1.125rem',
+                  color: '#0a0e17',
+                  background: 'linear-gradient(135deg, #00d4ff, #2dd4bf)',
+                  border: 'none',
+                  cursor: isCreating || !hasEnoughBalance ? 'not-allowed' : 'pointer',
+                  opacity: isCreating || !hasEnoughBalance ? 0.5 : 1,
+                  transition: 'box-shadow 0.2s, transform 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isCreating && hasEnoughBalance) {
+                    (e.target as HTMLButtonElement).style.boxShadow = '0 0 25px rgba(0,212,255,0.3)';
+                    (e.target as HTMLButtonElement).style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLButtonElement).style.boxShadow = 'none';
+                  (e.target as HTMLButtonElement).style.transform = 'none';
+                }}
               >
                 {isCreating ? (
                   <>
@@ -599,7 +723,7 @@ export const CreateESDT: React.FC = () => {
         {/* Right: Live Preview */}
         <div className="lg:col-span-2">
           <div className="sticky top-4">
-            <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-4">
+            <h3 className="text-sm font-semibold uppercase tracking-wider mb-4" style={{ color: TEXT_SECONDARY }}>
               Token Preview
             </h3>
             <TokenPreviewCard formData={formData} selectedType={selectedType} />
@@ -636,16 +760,19 @@ const Field: React.FC<{
   children: React.ReactNode;
 }> = ({ label, error, touched, hint, children }) => (
   <div>
-    <label className="block text-sm font-semibold text-gray-400 mb-2">
+    <label className="block text-sm font-semibold mb-2" style={{ color: TEXT_SECONDARY }}>
       {label}
-      {hint && <span className="text-xs text-gray-600 font-normal ml-2">({hint})</span>}
+      {hint && (
+        <span className="text-xs font-normal ml-2" style={{ color: TEXT_MUTED }}>({hint})</span>
+      )}
     </label>
     {children}
     {touched && error && (
       <motion.p
         initial={{ opacity: 0, y: -5 }}
         animate={{ opacity: 1, y: 0 }}
-        className="text-red-400 text-xs mt-1.5 flex items-center gap-1"
+        className="text-xs mt-1.5 flex items-center gap-1"
+        style={{ color: '#ef4444' }}
       >
         <AlertCircle className="w-3 h-3" /> {error}
       </motion.p>
@@ -672,11 +799,25 @@ const Tooltip: React.FC<{
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 5 }}
-            className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-[#1a1a25] border border-gray-700 rounded-xl text-xs text-gray-300 shadow-xl z-50"
+            style={{
+              position: 'absolute',
+              bottom: '100%',
+              left: 0,
+              marginBottom: '0.5rem',
+              width: '16rem',
+              padding: '0.75rem',
+              backgroundColor: '#1a1a25',
+              border: `1px solid ${CARD_BORDER}`,
+              borderRadius: '0.75rem',
+              fontSize: '0.75rem',
+              color: TEXT_SECONDARY,
+              boxShadow: '0 10px 25px rgba(0,0,0,0.4)',
+              zIndex: 50,
+            }}
           >
             <p>{text}</p>
             {risk && (
-              <p className="text-amber-400 mt-1 flex items-center gap-1">
+              <p className="mt-1 flex items-center gap-1" style={{ color: '#f59e0b' }}>
                 <AlertCircle className="w-3 h-3" /> {risk}
               </p>
             )}
@@ -692,10 +833,17 @@ const InfoCard: React.FC<{
   description: string;
   icon: React.ElementType;
 }> = ({ title, description, icon: Icon }) => (
-  <div className="bg-[#12121a] rounded-xl p-6 border border-gray-800">
-    <Icon className="w-8 h-8 text-cyan-400 mb-3" />
+  <div
+    style={{
+      backgroundColor: CARD_BG,
+      borderRadius: '0.75rem',
+      padding: '1.5rem',
+      border: `1px solid ${CARD_BORDER}`,
+    }}
+  >
+    <Icon className="w-8 h-8 mb-3" style={{ color: CYAN }} />
     <h4 className="font-bold text-white mb-2">{title}</h4>
-    <p className="text-sm text-gray-400">{description}</p>
+    <p className="text-sm" style={{ color: TEXT_SECONDARY }}>{description}</p>
   </div>
 );
 
@@ -713,15 +861,42 @@ const TokenPreviewCard: React.FC<{
   const propertiesActive = Object.entries(formData.properties).filter(([, v]) => v);
 
   return (
-    <div className="bg-[#12121a] rounded-2xl border border-gray-800 overflow-hidden">
+    <div
+      style={{
+        backgroundColor: CARD_BG,
+        borderRadius: '1rem',
+        border: `1px solid ${CARD_BORDER}`,
+        overflow: 'hidden',
+      }}
+    >
       {/* Header */}
-      <div className="h-20 bg-gradient-to-r from-gray-800 to-gray-900 relative flex items-center justify-center">
-        <TypeIcon className="w-10 h-10 text-gray-600" />
+      <div
+        style={{
+          height: '5rem',
+          background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <TypeIcon className="w-10 h-10" style={{ color: 'rgba(148,163,184,0.3)' }} />
       </div>
 
       <div className="px-5 pb-5">
         <div className="relative -mt-8 mb-3 flex justify-center">
-          <div className="w-16 h-16 rounded-2xl border-4 border-[#12121a] bg-gradient-to-br from-cyan-500 to-purple-500 flex items-center justify-center">
+          <div
+            style={{
+              width: '4rem',
+              height: '4rem',
+              borderRadius: '1rem',
+              border: `4px solid ${CARD_BG}`,
+              background: 'linear-gradient(135deg, #00d4ff, #2dd4bf)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <span className="text-white font-bold text-lg">
               {formData.ticker ? formData.ticker.slice(0, 2) : '??'}
             </span>
@@ -732,15 +907,12 @@ const TokenPreviewCard: React.FC<{
           <h4 className="text-lg font-bold text-white truncate">
             {formData.name || 'Untitled Token'}
           </h4>
-          <p className="text-cyan-400 text-sm font-mono">{formData.ticker || 'TICKER'}</p>
+          <p className="text-sm font-mono" style={{ color: CYAN }}>
+            {formData.ticker || 'TICKER'}
+          </p>
           <span
-            className={`inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full ${
-              selectedType.color === 'cyan'
-                ? 'bg-cyan-500/20 text-cyan-400'
-                : selectedType.color === 'purple'
-                ? 'bg-purple-500/20 text-purple-400'
-                : 'bg-amber-500/20 text-amber-400'
-            }`}
+            className="inline-block mt-1 text-[10px] px-2 py-0.5 rounded-full"
+            style={{ backgroundColor: 'rgba(0,212,255,0.1)', color: CYAN }}
           >
             {selectedType.title}
           </span>
@@ -748,12 +920,18 @@ const TokenPreviewCard: React.FC<{
 
         {formData.tokenType === 'fungible' && (
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="bg-[#1a1a25] rounded-lg p-3 text-center">
-              <p className="text-xs text-gray-500">Supply</p>
+            <div
+              className="rounded-lg p-3 text-center"
+              style={{ backgroundColor: INPUT_BG }}
+            >
+              <p className="text-xs" style={{ color: TEXT_MUTED }}>Supply</p>
               <p className="text-white font-bold text-sm">{supplyFormatted}</p>
             </div>
-            <div className="bg-[#1a1a25] rounded-lg p-3 text-center">
-              <p className="text-xs text-gray-500">Decimals</p>
+            <div
+              className="rounded-lg p-3 text-center"
+              style={{ backgroundColor: INPUT_BG }}
+            >
+              <p className="text-xs" style={{ color: TEXT_MUTED }}>Decimals</p>
               <p className="text-white font-bold text-sm">{formData.decimals}</p>
             </div>
           </div>
@@ -761,7 +939,9 @@ const TokenPreviewCard: React.FC<{
 
         {propertiesActive.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs text-gray-500 uppercase tracking-wider">Active Properties</p>
+            <p className="text-xs uppercase tracking-wider" style={{ color: TEXT_MUTED }}>
+              Active Properties
+            </p>
             <div className="flex flex-wrap gap-1.5">
               {propertiesActive.map(([key]) => {
                 const meta = PROPERTY_META[key];
@@ -769,7 +949,8 @@ const TokenPreviewCard: React.FC<{
                 return (
                   <span
                     key={key}
-                    className="inline-flex items-center gap-1 px-2 py-1 bg-cyan-500/10 text-cyan-400 text-[10px] rounded-md"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-[10px] rounded-md"
+                    style={{ backgroundColor: 'rgba(0,212,255,0.08)', color: CYAN }}
                   >
                     <Icon className="w-3 h-3" />
                     {meta.label}
@@ -794,33 +975,51 @@ const SuccessModal: React.FC<{
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    className="fixed inset-0 flex items-center justify-center z-50 p-4"
+    style={{ backgroundColor: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(4px)' }}
   >
     <motion.div
       initial={{ scale: 0.9, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.9, opacity: 0 }}
-      className="bg-[#12121a] rounded-2xl border border-gray-800 p-8 max-w-md w-full text-center"
+      style={{
+        backgroundColor: CARD_BG,
+        borderRadius: '1rem',
+        border: `1px solid ${CARD_BORDER}`,
+        padding: '2rem',
+        maxWidth: '28rem',
+        width: '100%',
+        textAlign: 'center',
+      }}
     >
-      <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-        <Check className="w-8 h-8 text-green-400" />
+      <div
+        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+        style={{ backgroundColor: 'rgba(34,197,94,0.1)' }}
+      >
+        <Check className="w-8 h-8" style={{ color: '#22c55e' }} />
       </div>
 
       <h2 className="text-2xl font-bold text-white mb-2">Token Deployed!</h2>
-      <p className="text-gray-400 mb-6">
+      <p className="mb-6" style={{ color: TEXT_SECONDARY }}>
         <strong className="text-white">{formData.name}</strong> ({formData.ticker}) has been
         submitted to the blockchain.
       </p>
 
-      <div className="bg-[#1a1a25] rounded-xl p-4 mb-6 text-left">
-        <p className="text-xs text-gray-500 mb-1">Transaction Hash</p>
-        <p className="text-cyan-400 text-sm font-mono break-all">{txHash}</p>
+      <div
+        className="rounded-xl p-4 mb-6 text-left"
+        style={{ backgroundColor: INPUT_BG }}
+      >
+        <p className="text-xs mb-1" style={{ color: TEXT_MUTED }}>Transaction Hash</p>
+        <p className="text-sm font-mono break-all" style={{ color: CYAN }}>{txHash}</p>
       </div>
 
       <div className="flex gap-3">
         <button
           onClick={onClose}
-          className="flex-1 py-3 bg-gray-800 rounded-xl text-white font-medium hover:bg-gray-700 transition-colors"
+          className="flex-1 py-3 rounded-xl font-medium text-white transition-colors"
+          style={{ backgroundColor: '#1e293b' }}
+          onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#334155'; }}
+          onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#1e293b'; }}
         >
           Create Another
         </button>
@@ -828,7 +1027,17 @@ const SuccessModal: React.FC<{
           onClick={() => {
             window.open(`https://devnet-explorer.multiversx.com/transactions/${txHash}`, '_blank');
           }}
-          className="flex-1 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-xl text-white font-bold hover:shadow-lg transition-all"
+          className="flex-1 py-3 rounded-xl font-bold text-white transition-all"
+          style={{
+            background: 'linear-gradient(135deg, #00d4ff, #2dd4bf)',
+            color: '#0a0e17',
+          }}
+          onMouseEnter={(e) => {
+            (e.target as HTMLButtonElement).style.boxShadow = '0 0 20px rgba(0,212,255,0.3)';
+          }}
+          onMouseLeave={(e) => {
+            (e.target as HTMLButtonElement).style.boxShadow = 'none';
+          }}
         >
           View on Explorer
         </button>
