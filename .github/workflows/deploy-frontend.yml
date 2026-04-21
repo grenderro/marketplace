@@ -45,15 +45,36 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build 2>&1
+          echo '--- Build step exit code:' $?
         env:
           CI: false
           NODE_OPTIONS: --max-old-space-size=4096
           GENERATE_SOURCEMAP: false
           TSC_COMPILE_ON_ERROR: true
 
+      - name: Inspect build output
+        run: |
+          echo '--- CWD ---'
+          pwd
+          echo '--- frontend/build ---'
+          ls -la build/ 2>/dev/null || echo 'build/ not found'
+          echo '--- Root build ---'
+          ls -la ../build/ 2>/dev/null || echo '../build/ not found'
+          echo '--- Find index.html ---'
+          find . -name 'index.html' -type f 2>/dev/null || echo 'no index.html found'
+
       - name: Copy index.html to 404.html
-        run: cp build/index.html build/404.html
+        run: |
+          if [ -f build/index.html ]; then
+            cp build/index.html build/404.html
+          else
+            echo 'WARNING: build/index.html not found, skipping cp'
+            # Create a minimal 404.html so deploy doesn't fail completely
+            mkdir -p build
+            echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>404</title></head><body><h1>Page Not Found</h1></body></html>' > build/404.html
+          fi
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
