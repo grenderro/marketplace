@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useSdk } from '../../../components/stubs/SdkStubs';
 import MarketplaceNav from '../../../components/marketplace/MarketplaceNav';
+import CompetitionBanner from '../../../components/marketplace/CompetitionBanner';
 import { contractService, Listing } from '../../../services/contractService';
 
 interface Filters {
@@ -112,6 +113,7 @@ export default function NFTMarketplace() {
   return (
     <div className="min-h-screen" style={{ background: '#0f172a' }}>
       <MarketplaceNav />
+      <CompetitionBanner />
       
       <div style={{
         maxWidth: '1400px',
