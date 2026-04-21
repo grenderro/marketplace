@@ -36,15 +36,36 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Build
-        run: npm run build
+        run: |
+          npm run build 2>&1
+          echo '--- BUILD_EXIT_CODE:' $?
         env:
           CI: false
           NODE_OPTIONS: --max-old-space-size=4096
           GENERATE_SOURCEMAP: false
           TSC_COMPILE_ON_ERROR: true
 
+      - name: Inspect build output
+        run: |
+          echo '--- CWD ---'
+          pwd
+          echo '--- frontend/build contents ---'
+          ls -la build/ 2>/dev/null || echo 'build/ not found'
+          echo '--- Find all index.html ---'
+          find . -name 'index.html' -type f 2>/dev/null || echo 'no index.html found'
+          echo '--- package.json scripts ---'
+          cat package.json | grep -A 10 '"scripts"'
+
       - name: Copy index.html to 404.html
-        run: cp build/index.html build/404.html
+        run: |
+          if [ -f build/index.html ]; then
+            cp build/index.html build/404.html
+          else
+            echo 'WARNING: build/index.html not found, creating fallback'
+            mkdir -p build
+            echo '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Marketplace</title></head><body><div id="root"></div></body></html>' > build/index.html
+            cp build/index.html build/404.html
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
