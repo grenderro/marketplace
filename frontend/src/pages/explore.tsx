@@ -407,6 +407,18 @@ export default function ExplorePage() {
 
           <article>
             <a
+              href="/nfts"
+              className="service-card legal-card unique-bg-card slide-from-left"
+            >
+              <div className="card-content">
+                <h3>NFT MARKETPLACE</h3>
+                <p>BROWSE, BUY, AND SELL AUTHENTIC NFTS FROM THE MULTIVERSX BLOCKCHAIN.</p>
+              </div>
+            </a>
+          </article>
+
+          <article>
+            <a
               href="https://marketplace.artcpaclub.com/staking/nft"
               className="service-card nft-staking-card unique-bg-card slide-from-left"
               target="_blank"
@@ -471,19 +483,6 @@ export default function ExplorePage() {
             </a>
           </article>
 
-          <article>
-            <a
-              href="https://forms.gle/66xkPZfkA4ZyfDrM6"
-              className="service-card legal-card unique-bg-card slide-from-right"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <div className="card-content">
-                <h3>LEGAL & COMPLIANCE</h3>
-                <p>EXPERT GUIDANCE TO ENSURE YOUR CRYPTO PROJECT IS FULLY COMPLIANT.</p>
-              </div>
-            </a>
-          </article>
 
           <article>
             <a
