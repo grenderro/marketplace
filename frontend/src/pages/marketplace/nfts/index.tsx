@@ -6,8 +6,9 @@ import CompetitionBanner from '../../../components/marketplace/CompetitionBanner
 import { contractService, Listing } from '../../../services/contractService';
 
 interface Filters {
-  sortBy: string;
-  priceRange: string;
+  sortBy: 'newest' | 'price_asc' | 'price_desc';
+  priceMin: string;
+  priceMax: string;
 }
 
 export default function NFTMarketplace() {
@@ -21,8 +22,9 @@ export default function NFTMarketplace() {
   const [buying, setBuying] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<Filters>({
-    sortBy: 'recent',
-    priceRange: 'all',
+    sortBy: 'newest',
+    priceMin: '',
+    priceMax: '',
   });
 
   useEffect(() => {
@@ -101,23 +103,30 @@ export default function NFTMarketplace() {
     e.preventDefault();
   };
 
-  // Filter listings by price and search query
+  // Filter listings by price, search query, and sort
   const filteredListings = listings.filter(listing => {
     const matchesSearch = !searchQuery || 
       listing.token_id.toLowerCase().includes(searchQuery.toLowerCase());
     
     if (!matchesSearch) return false;
 
-    if (filters.priceRange === 'low') {
-      return BigInt(listing.price_amount) < BigInt(1e18); // < 1 EGLD
-    }
-    if (filters.priceRange === 'mid') {
-      return BigInt(listing.price_amount) >= BigInt(1e18) && BigInt(listing.price_amount) < BigInt(10e18);
-    }
-    if (filters.priceRange === 'high') {
-      return BigInt(listing.price_amount) >= BigInt(10e18); // > 10 EGLD
-    }
+    const price = BigInt(listing.price_amount);
+    const min = filters.priceMin ? BigInt(Math.floor(parseFloat(filters.priceMin) * 1e18)) : null;
+    const max = filters.priceMax ? BigInt(Math.floor(parseFloat(filters.priceMax) * 1e18)) : null;
+
+    if (min && price < min) return false;
+    if (max && price > max) return false;
+
     return true;
+  }).sort((a, b) => {
+    if (filters.sortBy === 'price_asc') {
+      return BigInt(a.price_amount) < BigInt(b.price_amount) ? -1 : 1;
+    }
+    if (filters.sortBy === 'price_desc') {
+      return BigInt(a.price_amount) > BigInt(b.price_amount) ? -1 : 1;
+    }
+    // newest - sort by created_at descending
+    return b.created_at - a.created_at;
   });
 
   return (
@@ -311,6 +320,7 @@ export default function NFTMarketplace() {
               </h3>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Price Range - Min/Max Inputs */}
                 <div>
                   <label style={{ 
                     display: 'block', 
@@ -318,11 +328,56 @@ export default function NFTMarketplace() {
                     color: '#94a3b8', 
                     fontSize: '0.875rem' 
                   }}>
-                    Price Range
+                    Price Range (EGLD)
                   </label>
-                  <select 
-                    value={filters.priceRange}
-                    onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={filters.priceMin}
+                    onChange={(e) => setFilters({...filters, priceMin: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '0.9rem',
+                      marginBottom: '0.5rem',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={filters.priceMax}
+                    onChange={(e) => setFilters({...filters, priceMax: e.target.value})}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      background: 'rgba(0,0,0,0.3)',
+                      border: '1px solid rgba(255,255,255,0.1)',
+                      borderRadius: '8px',
+                      color: '#fff',
+                      fontSize: '0.9rem',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+
+                {/* Sort By */}
+                <div>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '0.5rem', 
+                    color: '#94a3b8', 
+                    fontSize: '0.875rem' 
+                  }}>
+                    Sort By
+                  </label>
+                  <select
+                    value={filters.sortBy}
+                    onChange={(e) => setFilters({...filters, sortBy: e.target.value as Filters['sortBy']})}
                     style={{
                       width: '100%',
                       padding: '0.75rem',
@@ -334,16 +389,15 @@ export default function NFTMarketplace() {
                       cursor: 'pointer'
                     }}
                   >
-                    <option value="all">All Prices</option>
-                    <option value="low">Under 1 EGLD</option>
-                    <option value="mid">1 - 10 EGLD</option>
-                    <option value="high">Over 10 EGLD</option>
+                    <option value="newest">Newest First</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
                   </select>
                 </div>
 
                 <button 
                   onClick={() => {
-                    setFilters({ sortBy: 'recent', priceRange: 'all' });
+                    setFilters({ sortBy: 'newest', priceMin: '', priceMax: '' });
                     fetchListings();
                   }}
                   style={{
