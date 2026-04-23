@@ -435,10 +435,8 @@ export default function ExplorePage() {
 
           <article>
             <a
-              href="https://forms.gle/66xkPZfkA4ZyfDrM6"
+              href="/create-esdt"
               className="service-card esdt-creation-card unique-bg-card slide-from-left"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               <div className="card-content">
                 <h3>ESDT CREATION</h3>
