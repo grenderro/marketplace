@@ -19,6 +19,7 @@ export default function NFTMarketplace() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [buying, setBuying] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<Filters>({
     sortBy: 'recent',
     priceRange: 'all',
@@ -96,8 +97,17 @@ export default function NFTMarketplace() {
     }
   };
 
-  // Filter listings by price
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+  };
+
+  // Filter listings by price and search query
   const filteredListings = listings.filter(listing => {
+    const matchesSearch = !searchQuery || 
+      listing.token_id.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    if (!matchesSearch) return false;
+
     if (filters.priceRange === 'low') {
       return BigInt(listing.price_amount) < BigInt(1e18); // < 1 EGLD
     }
@@ -115,34 +125,123 @@ export default function NFTMarketplace() {
       <MarketplaceNav />
       <CompetitionBanner />
       
+      {/* Hero Section - Moved from Explore */}
+      <div style={{
+        padding: isMobile ? '2rem 1rem' : '3rem 2rem',
+        textAlign: 'center',
+        borderBottom: '1px solid rgba(255,255,255,0.1)',
+        background: 'linear-gradient(135deg, rgba(0,212,255,0.1) 0%, transparent 50%, rgba(168,85,247,0.1) 100%)'
+      }}>
+        <motion.h1
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            fontSize: isMobile ? '2rem' : '3.5rem',
+            fontWeight: 800,
+            marginBottom: '1rem',
+            color: '#fff',
+            lineHeight: 1.2
+          }}
+        >
+          Discover <span style={{ color: '#00d4ff' }}>MultiversX</span> NFTs
+        </motion.h1>
+        
+        <motion.p
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          style={{
+            color: '#94a3b8',
+            fontSize: isMobile ? '1rem' : '1.25rem',
+            maxWidth: '700px',
+            margin: '0 auto 2rem',
+            lineHeight: 1.6
+          }}
+        >
+          Browse, buy, and sell authentic NFTs from the MultiversX blockchain. 
+          {listings.length > 0 && ` Showing ${filteredListings.length}+ items`}
+        </motion.p>
+
+        {/* Smart Search Bar */}
+        <motion.form
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          onSubmit={handleSearch}
+          style={{
+            maxWidth: '600px',
+            margin: '0 auto',
+            position: 'relative'
+          }}
+        >
+          <input
+            type="text"
+            placeholder="Search NFTs, collections, or creators..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '1rem 3rem 1rem 1.5rem',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '12px',
+              color: '#fff',
+              fontSize: '1rem',
+              outline: 'none',
+              backdropFilter: 'blur(10px)'
+            }}
+          />
+          <button
+            type="submit"
+            style={{
+              position: 'absolute',
+              right: '8px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: '#00d4ff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.5rem 1rem',
+              cursor: 'pointer',
+              color: '#0f172a',
+              fontWeight: 600
+            }}
+          >
+            🔍 Search
+          </button>
+        </motion.form>
+
+        {/* Quick Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '2rem',
+            marginTop: '2rem',
+            flexWrap: 'wrap'
+          }}
+        >
+          {[
+            { label: 'Total NFTs', value: '50K+' },
+            { label: 'Collections', value: '1.2K+' },
+            { label: 'Volume', value: '2M EGLD' }
+          ].map((stat, i) => (
+            <div key={i} style={{ textAlign: 'center' }}>
+              <div style={{ color: '#00d4ff', fontSize: '1.5rem', fontWeight: 700 }}>{stat.value}</div>
+              <div style={{ color: '#64748b', fontSize: '0.9rem' }}>{stat.label}</div>
+            </div>
+          ))}
+        </motion.div>
+      </div>
+
       <div style={{
         maxWidth: '1400px',
         margin: '0 auto',
         padding: isMobile ? '1rem 0.5rem' : '2rem'
       }}>
-        {/* Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{ 
-            textAlign: 'center', 
-            marginBottom: '2rem',
-            padding: isMobile ? '0 0.5rem' : 0
-          }}
-        >
-          <h1 style={{ 
-            fontSize: isMobile ? '1.75rem' : '2.5rem', 
-            fontWeight: 800, 
-            marginBottom: '0.5rem',
-            color: '#fff'
-          }}>
-            NFT <span style={{ color: '#00d4ff' }}>Marketplace</span>
-          </h1>
-          <p style={{ color: '#94a3b8', maxWidth: '600px', margin: '0 auto' }}>
-            {loading ? 'Loading from devnet blockchain...' : `${filteredListings.length} items listed`}
-          </p>
-        </motion.div>
-
         {/* Mobile Filter Toggle */}
         {isMobile && (
           <button
