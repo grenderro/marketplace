@@ -1,5 +1,6 @@
 // src/pages/explore.tsx - Trad3Ex Landing Page Copy
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 export default function ExplorePage() {
   // Inject Font Awesome for icons
@@ -410,15 +411,15 @@ export default function ExplorePage() {
           </article>
 
           <article>
-            <a
-              href="/nfts"
+            <Link
+              to="/nfts"
               className="service-card nft-marketplace-card unique-bg-card slide-from-left"
             >
               <div className="card-content">
                 <h3>NFT MARKETPLACE</h3>
                 <p>BROWSE, BUY, AND SELL AUTHENTIC NFTS FROM THE MULTIVERSX BLOCKCHAIN.</p>
               </div>
-            </a>
+            </Link>
           </article>
 
           <article>
@@ -450,27 +451,27 @@ export default function ExplorePage() {
           </article>
 
           <article>
-            <a
-              href="/create-esdt"
+            <Link
+              to="/create-esdt"
               className="service-card esdt-creation-card unique-bg-card slide-from-left"
             >
               <div className="card-content">
                 <h3>ESDT CREATION</h3>
                 <p>QUICK AND COMPLIANT CREATION OF YOUR OWN MULTIVERSX ESDT TOKEN.</p>
               </div>
-            </a>
+            </Link>
           </article>
 
           <article>
-            <a
-              href="/create-nft"
+            <Link
+              to="/create-nft"
               className="service-card nft-creation-card unique-bg-card slide-from-right"
             >
               <div className="card-content">
                 <h3>NFT CREATION</h3>
                 <p>FULL-STACK SERVICE TO GENERATE, MINT, AND DEPLOY YOUR NFT COLLECTION.</p>
               </div>
-            </a>
+            </Link>
           </article>
 
           <article>
