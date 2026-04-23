@@ -187,6 +187,10 @@ export default function ExplorePage() {
             background-image: url('https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeibwrlr6r5hhzvemdnurf7zpyvjezlw2ngrgz3lsrqljxrbdmdznue/legal%20trad3ex.png');
         }
 
+        .nft-marketplace-card {
+            background-image: linear-gradient(135deg, rgba(0,212,255,0.35) 0%, rgba(168,85,247,0.35) 50%, rgba(0,255,144,0.2) 100%);
+        }
+
         .mystery-box-card {
             background-image: url('https://sapphire-acute-anaconda-630.mypinata.cloud/ipfs/bafybeibwrlr6r5hhzvemdnurf7zpyvjezlw2ngrgz3lsrqljxrbdmdznue/mystery%20box%20trad3ex.png');
         }
@@ -408,7 +412,7 @@ export default function ExplorePage() {
           <article>
             <a
               href="/nfts"
-              className="service-card legal-card unique-bg-card slide-from-left"
+              className="service-card nft-marketplace-card unique-bg-card slide-from-left"
             >
               <div className="card-content">
                 <h3>NFT MARKETPLACE</h3>
