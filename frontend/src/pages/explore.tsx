@@ -449,10 +449,8 @@ export default function ExplorePage() {
 
           <article>
             <a
-              href="https://forms.gle/66xkPZfkA4ZyfDrM6"
+              href="/create-nft"
               className="service-card nft-creation-card unique-bg-card slide-from-right"
-              target="_blank"
-              rel="noopener noreferrer"
             >
               <div className="card-content">
                 <h3>NFT CREATION</h3>
