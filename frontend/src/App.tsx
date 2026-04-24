@@ -23,11 +23,27 @@ function App() {
         <DappProvider
           environment={ACTIVE_NETWORK.id}
           customNetworkConfig={{
-            name: 'customConfig',
-            apiTimeout: 10000,
-            walletConnectV2ProjectId: process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID,
+            id: 'devnet',
+            chainId: 'D',
+            name: 'Devnet',
+            egldLabel: 'xEGLD',
+            decimals: '18',
+            digits: '4',
+            gasPerDataByte: '1500',
+            apiTimeout: '10000',
+            walletConnectDeepLink: 'https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://xportal.com/',
+            walletAddress: 'https://devnet-wallet.multiversx.com',
+            // xAliasAddress is not part of CustomNetworkType, provided by SDK defaults
+            apiAddress: 'https://devnet-api.multiversx.com',
+            explorerAddress: 'https://devnet-explorer.multiversx.com',
+            skipFetchFromServer: true,
+            ...(process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID &&
+              process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID !== 'your_walletconnect_project_id_here' &&
+              process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID !== 'your_new_id'
+              ? { walletConnectV2ProjectId: process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID }
+              : {}),
           }}
-          dappConfig={{ shouldUseWebViewProvider: true, logoutRoute: '/' }}
+          dappConfig={{ shouldUseWebViewProvider: false, logoutRoute: '/' }}
         >
           <div className="app-container">
             <header className="app-header">

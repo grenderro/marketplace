@@ -31,8 +31,7 @@ export const useSdk = (): WalletContextType => {
   const { isLoggedIn } = realUseGetLoginInfo();
   const { address, account } = realUseGetAccountInfo();
   
-  const callbackRoute = `${window.location.pathname}${window.location.hash}`;
-  const loginConfig = { callbackRoute };
+  const loginConfig = { callbackRoute: window.location.pathname };
   
   // Initialize hooks with config
   const [initExtensionLogin] = realUseExtensionLogin(loginConfig);
@@ -63,7 +62,7 @@ export const useSdk = (): WalletContextType => {
   };
 
   const logout = () => {
-    sdkLogout(callbackRoute);
+    sdkLogout(window.location.pathname);
   };
 
   return {

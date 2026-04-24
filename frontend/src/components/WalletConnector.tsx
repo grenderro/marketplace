@@ -21,8 +21,7 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav
   const { isLoggedIn } = useGetLoginInfo();
   const [showModal, setShowModal] = useState(false);
 
-  // For HashRouter we include the hash so the web-wallet redirect lands back on the same route
-  const callbackRoute = `${window.location.pathname}${window.location.hash}`;
+  const callbackRoute = window.location.pathname;
 
   const [initExtensionLogin] = useExtensionLogin({ callbackRoute });
   const [initWebWalletLogin] = useWebWalletLogin({ callbackRoute });
