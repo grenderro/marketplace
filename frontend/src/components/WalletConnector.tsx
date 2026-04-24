@@ -1,5 +1,6 @@
 // WalletConnector.tsx — Uses @multiversx/sdk-dapp hooks for proper wallet integration
 import React, { useState } from 'react';
+// HashRouter note: routes live in window.location.hash
 import {
   useGetAccountInfo,
   useGetLoginInfo,
@@ -20,10 +21,13 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav
   const { isLoggedIn } = useGetLoginInfo();
   const [showModal, setShowModal] = useState(false);
 
-  const [initExtensionLogin] = useExtensionLogin({ callbackRoute: window.location.pathname });
-  const [initWebWalletLogin] = useWebWalletLogin({ callbackRoute: window.location.pathname });
+  // For HashRouter we include the hash so the web-wallet redirect lands back on the same route
+  const callbackRoute = `${window.location.pathname}${window.location.hash}`;
+
+  const [initExtensionLogin] = useExtensionLogin({ callbackRoute });
+  const [initWebWalletLogin] = useWebWalletLogin({ callbackRoute });
   const [initWalletConnectLogin] = useWalletConnectV2Login({
-    callbackRoute: window.location.pathname,
+    callbackRoute,
     logoutRoute: '/',
   });
 

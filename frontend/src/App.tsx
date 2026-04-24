@@ -3,6 +3,7 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; // Changed to HashRouter
 import { DappProvider } from '@multiversx/sdk-dapp/wrappers';
+import { ACTIVE_NETWORK } from './config';
 import Explore from './pages/explore';
 import NFTMarketplace from './pages/marketplace/nfts';
 import ESDTMarketplace from './pages/marketplace/esdt';
@@ -20,8 +21,12 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router> {/* HashRouter now */}
         <DappProvider
-          environment="devnet"
-          customNetworkConfig={{ name: 'customConfig', apiTimeout: 10000 }}
+          environment={ACTIVE_NETWORK.id}
+          customNetworkConfig={{
+            name: 'customConfig',
+            apiTimeout: 10000,
+            walletConnectV2ProjectId: process.env.REACT_APP_WALLET_CONNECT_PROJECT_ID,
+          }}
           dappConfig={{ shouldUseWebViewProvider: true, logoutRoute: '/' }}
         >
           <div className="app-container">

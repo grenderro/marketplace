@@ -8,6 +8,7 @@ import {
   useLedgerLogin as realUseLedgerLogin,
   useWalletConnectV2Login as realUseWalletConnectV2Login
 } from '@multiversx/sdk-dapp/hooks';
+import { logout as sdkLogout } from '@multiversx/sdk-dapp/utils';
 
 export const useGetLoginInfo = realUseGetLoginInfo;
 export const useGetAccountInfo = realUseGetAccountInfo;
@@ -30,7 +31,8 @@ export const useSdk = (): WalletContextType => {
   const { isLoggedIn } = realUseGetLoginInfo();
   const { address, account } = realUseGetAccountInfo();
   
-  const loginConfig = { callbackRoute: window.location.pathname };
+  const callbackRoute = `${window.location.pathname}${window.location.hash}`;
+  const loginConfig = { callbackRoute };
   
   // Initialize hooks with config
   const [initExtensionLogin] = realUseExtensionLogin(loginConfig);
@@ -44,28 +46,24 @@ export const useSdk = (): WalletContextType => {
   const login = async (providerType: string) => {
     switch (providerType) {
       case 'extension':
-        // Extension needs config in the call
-        await initExtensionLogin(loginConfig);
+        // InitiateLoginFunctionType takes no arguments
+        await initExtensionLogin();
         break;
       case 'web':
-        // Web wallet - no args in call (config already in hook)
         await initWebWalletLogin();
         break;
       case 'ledger':
-        // Ledger - no args in call (config already in hook)
         await initLedgerLogin();
         break;
       case 'mobile':
       case 'xportal':
-        // WalletConnect expects boolean
-        await initWalletConnectLogin(true);
+        await initWalletConnectLogin();
         break;
     }
   };
 
   const logout = () => {
-    localStorage.clear();
-    window.location.reload();
+    sdkLogout(callbackRoute);
   };
 
   return {
