@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "name": "ESDT Trading Sprint",
+  "description": "Trade ESDT tokens and compete for the highest volume. Top traders win EGLD prizes!",
+  "endTime": 1745100000,
+  "prizePool": "25",
+  "prizeToken": "EGLD",
+  "volumeTarget": "100000",
+  "currentVolume": "67342",
+  "topToken": "RIDE",
+  "participants": 856
+}

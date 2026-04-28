@@ -1,0 +1,14 @@
+{
+  "files": {
+    "main.css": "/marketplace/static/css/main.2983b6d7.css",
+    "main.js": "/marketplace/static/js/main.b63a886c.js",
+    "static/js/1.c8c8d77e.chunk.js": "/marketplace/static/js/1.c8c8d77e.chunk.js",
+    "static/js/213.b7f61f3d.chunk.js": "/marketplace/static/js/213.b7f61f3d.chunk.js",
+    "static/media/axios.cjs": "/marketplace/static/media/axios.3272a31f226345def3e5.cjs",
+    "index.html": "/marketplace/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.2983b6d7.css",
+    "static/js/main.b63a886c.js"
+  ]
+}
