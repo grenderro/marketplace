@@ -34,12 +34,13 @@ export const useSdk = (): WalletContextType => {
   const loginConfig = { callbackRoute: window.location.pathname };
   
   // Initialize hooks with config
-  const [initExtensionLogin] = realUseExtensionLogin(loginConfig);
-  const [initWebWalletLogin] = realUseWebWalletLogin(loginConfig);
-  const [initLedgerLogin] = realUseLedgerLogin(loginConfig);
+  const [initExtensionLogin] = realUseExtensionLogin({ ...loginConfig, nativeAuth: false });
+  const [initWebWalletLogin] = realUseWebWalletLogin({ ...loginConfig, nativeAuth: false });
+  const [initLedgerLogin] = realUseLedgerLogin({ ...loginConfig, nativeAuth: false });
   const [initWalletConnectLogin] = realUseWalletConnectV2Login({
     ...loginConfig,
-    logoutRoute: '/'
+    logoutRoute: '/',
+    nativeAuth: false,
   });
 
   const login = async (providerType: string) => {

@@ -23,11 +23,12 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav
 
   const callbackRoute = window.location.pathname;
 
-  const [initExtensionLogin] = useExtensionLogin({ callbackRoute });
-  const [initWebWalletLogin] = useWebWalletLogin({ callbackRoute });
+  const [initExtensionLogin] = useExtensionLogin({ callbackRoute, nativeAuth: false });
+  const [initWebWalletLogin] = useWebWalletLogin({ callbackRoute, nativeAuth: false });
   const [initWalletConnectLogin] = useWalletConnectV2Login({
     callbackRoute,
     logoutRoute: '/',
+    nativeAuth: false,
   });
 
   const handleLogin = async (provider: string) => {
