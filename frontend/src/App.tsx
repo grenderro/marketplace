@@ -8,6 +8,9 @@ import Explore from './pages/explore';
 import NFTMarketplace from './pages/marketplace/nfts';
 import ESDTMarketplace from './pages/marketplace/esdt';
 import LiveAuctions from './pages/marketplace/auctions';
+import MyListed from './pages/marketplace/my-listed';
+import History from './pages/marketplace/history';
+import Holdings from './pages/marketplace/holdings';
 import CreateCollection from './components/marketplace/CreateCollection';
 import CreateESDT from './components/marketplace/CreateESDT';
 import { WalletConnector } from './components/WalletConnector';
@@ -59,6 +62,9 @@ function App() {
                 <Route path="/auctions" element={<LiveAuctions />} />
                 <Route path="/create-nft" element={<CreateCollection />} />
                 <Route path="/create-esdt" element={<CreateESDT />} />
+                <Route path="/my-listed" element={<MyListed />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/holdings" element={<Holdings />} />
               </Routes>
             </main>
           </div>

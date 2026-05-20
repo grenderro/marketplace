@@ -80,3 +80,27 @@ export const fetchNFTDetails = async (identifier: string): Promise<NFT | null> =
   if (!response.ok) return null;
   return await response.json();
 };
+
+export const fetchAccountNFTs = async (address: string): Promise<NFT[]> => {
+  const response = await fetch(`${API_URL}/accounts/${address}/nfts?size=100`);
+  if (!response.ok) throw new Error('Failed to fetch account NFTs');
+  return await response.json();
+};
+
+export interface TransactionItem {
+  txHash: string;
+  sender: string;
+  receiver: string;
+  data: string;
+  status: string;
+  timestamp: number;
+  value: string;
+  function?: string;
+  operations?: any[];
+}
+
+export const fetchAccountTransactions = async (address: string, size = 50): Promise<TransactionItem[]> => {
+  const response = await fetch(`${API_URL}/accounts/${address}/transactions?size=${size}&withScResults=true`);
+  if (!response.ok) throw new Error('Failed to fetch transactions');
+  return await response.json();
+};

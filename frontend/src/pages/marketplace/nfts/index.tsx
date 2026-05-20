@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useSdk } from '../../../components/stubs/SdkStubs';
 import MarketplaceNav from '../../../components/marketplace/MarketplaceNav';
 import CompetitionBanner from '../../../components/marketplace/CompetitionBanner';
@@ -13,6 +14,7 @@ interface Filters {
 
 export default function NFTMarketplace() {
   const sdk = useSdk();
+  const navigate = useNavigate();
   const isAuthenticated = sdk.isAuthenticated;
   const address = sdk.address;
   const [isMobile, setIsMobile] = useState(false);
@@ -242,6 +244,56 @@ export default function NFTMarketplace() {
               <div style={{ color: '#00d4ff', fontSize: '1.5rem', fontWeight: 700 }}>{stat.value}</div>
               <div style={{ color: '#64748b', fontSize: '0.9rem' }}>{stat.label}</div>
             </div>
+          ))}
+        </motion.div>
+
+        {/* Wallet Action Buttons */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: isMobile ? '0.5rem' : '1rem',
+            marginTop: '1.5rem',
+            flexWrap: 'wrap'
+          }}
+        >
+          {[
+            { label: 'Listed', path: '/my-listed' },
+            { label: 'History', path: '/history' },
+            { label: 'Holdings', path: '/holdings' }
+          ].map((btn) => (
+            <button
+              key={btn.path}
+              onClick={() => {
+                if (!isAuthenticated) {
+                  alert('Please connect your wallet first');
+                  return;
+                }
+                navigate(btn.path);
+              }}
+              style={{
+                padding: isMobile ? '0.6rem 1rem' : '0.75rem 1.5rem',
+                background: 'transparent',
+                border: '1px solid rgba(0, 212, 255, 0.3)',
+                borderRadius: '8px',
+                color: '#00d4ff',
+                fontWeight: 600,
+                fontSize: isMobile ? '0.85rem' : '0.95rem',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+              }}
+            >
+              {btn.label}
+            </button>
           ))}
         </motion.div>
       </div>

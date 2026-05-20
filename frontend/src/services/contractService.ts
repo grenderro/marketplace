@@ -1,3 +1,5 @@
+import { Address } from '@multiversx/sdk-core';
+
 const GATEWAY_URL = 'https://devnet-gateway.multiversx.com';
 const CONTRACT_ADDRESS = 'erd1qqqqqqqqqqqqqpgqmzpauhqppu707208j8zrjq8q7trpgw7yvhuqtjt9ev';
 
@@ -53,8 +55,13 @@ const decodeBigUint = (b64: string): string => {
 const decodeAddress = (b64: string): string => {
   try {
     if (!b64 || b64 === 'AA==' || b64 === '') return '';
-    const hex = atob(b64);
-    return 'erd1...' + hex.slice(-8);
+    const binary = atob(b64);
+    let hex = '';
+    for (let i = 0; i < binary.length; i++) {
+      hex += binary.charCodeAt(i).toString(16).padStart(2, '0');
+    }
+    const addr = Address.fromHex(hex);
+    return addr.bech32();
   } catch {
     return '';
   }
