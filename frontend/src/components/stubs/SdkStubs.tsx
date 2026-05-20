@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createContext, useContext, useCallback } from 'react';
 import {
   useGetLoginInfo as realUseGetLoginInfo,
   useGetAccountInfo as realUseGetAccountInfo,
@@ -10,6 +10,7 @@ import {
 } from '@multiversx/sdk-dapp/hooks';
 import { logout as sdkLogout } from '@multiversx/sdk-dapp/utils';
 
+// Re-export raw hooks for components that need them directly
 export const useGetLoginInfo = realUseGetLoginInfo;
 export const useGetAccountInfo = realUseGetAccountInfo;
 export const useGetNetworkConfig = realUseGetNetworkConfig;
@@ -27,26 +28,32 @@ export interface WalletContextType {
   isLoggedIn: boolean;
 }
 
-export const useSdk = (): WalletContextType => {
+const WalletContext = createContext<WalletContextType | null>(null);
+
+export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = realUseGetLoginInfo();
   const { address, account } = realUseGetAccountInfo();
-  
-  const loginConfig = { callbackRoute: window.location.pathname };
-  
-  // Initialize hooks with config
-  const [initExtensionLogin] = realUseExtensionLogin({ ...loginConfig, nativeAuth: false });
-  const [initWebWalletLogin] = realUseWebWalletLogin({ ...loginConfig, nativeAuth: false });
-  const [initLedgerLogin] = realUseLedgerLogin({ ...loginConfig, nativeAuth: false });
+
+  // IMPORTANT: With HashRouter, the server only serves the root HTML file.
+  // The actual route lives in window.location.hash. The web wallet redirect
+  // must come back to '/' so the SPA loads and sdk-dapp can read the
+  // query parameters and restore the session.
+  const callbackRoute = '/';
+
+  // Initialize login hooks ONCE at the provider level.
+  // Never call these inside individual components or page hooks.
+  const [initExtensionLogin] = realUseExtensionLogin({ callbackRoute, nativeAuth: false });
+  const [initWebWalletLogin] = realUseWebWalletLogin({ callbackRoute, nativeAuth: false });
+  const [initLedgerLogin] = realUseLedgerLogin({ callbackRoute, nativeAuth: false });
   const [initWalletConnectLogin] = realUseWalletConnectV2Login({
-    ...loginConfig,
+    callbackRoute,
     logoutRoute: '/',
     nativeAuth: false,
   });
 
-  const login = async (providerType: string) => {
+  const login = useCallback(async (providerType: string) => {
     switch (providerType) {
       case 'extension':
-        // InitiateLoginFunctionType takes no arguments
         await initExtensionLogin();
         break;
       case 'web':
@@ -59,14 +66,16 @@ export const useSdk = (): WalletContextType => {
       case 'xportal':
         await initWalletConnectLogin();
         break;
+      default:
+        console.warn('Unknown provider:', providerType);
     }
-  };
+  }, [initExtensionLogin, initWebWalletLogin, initLedgerLogin, initWalletConnectLogin]);
 
-  const logout = () => {
-    sdkLogout(window.location.pathname);
-  };
+  const logout = useCallback(() => {
+    sdkLogout(callbackRoute);
+  }, []);
 
-  return {
+  const value: WalletContextType = {
     address: address || null,
     isAuthenticated: isLoggedIn,
     accountBalance: account?.balance || '0',
@@ -78,6 +87,20 @@ export const useSdk = (): WalletContextType => {
     account,
     isLoggedIn
   };
+
+  return (
+    <WalletContext.Provider value={value}>
+      {children}
+    </WalletContext.Provider>
+  );
+};
+
+export const useSdk = (): WalletContextType => {
+  const context = useContext(WalletContext);
+  if (!context) {
+    throw new Error('useSdk must be used within a WalletProvider');
+  }
+  return context;
 };
 
 // UI Components

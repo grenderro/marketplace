@@ -1,63 +1,29 @@
-// WalletConnector.tsx — Uses @multiversx/sdk-dapp hooks for proper wallet integration
+// WalletConnector.tsx — Uses shared wallet context for proper sdk-dapp integration
 import React, { useState } from 'react';
-// HashRouter note: routes live in window.location.hash
-import {
-  useGetAccountInfo,
-  useGetLoginInfo,
-} from '@multiversx/sdk-dapp/hooks';
-import {
-  useExtensionLogin,
-  useWebWalletLogin,
-  useWalletConnectV2Login,
-} from '@multiversx/sdk-dapp/hooks';
-import { logout } from '@multiversx/sdk-dapp/utils';
+import { useSdk } from './stubs/SdkStubs';
 
 interface WalletConnectorProps {
   variant?: 'nav' | 'button';
 }
 
 export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav' }) => {
-  const { address } = useGetAccountInfo();
-  const { isLoggedIn } = useGetLoginInfo();
+  const { address, isAuthenticated, login, logout } = useSdk();
   const [showModal, setShowModal] = useState(false);
-
-  const callbackRoute = window.location.pathname;
-
-  const [initExtensionLogin] = useExtensionLogin({ callbackRoute, nativeAuth: false });
-  const [initWebWalletLogin] = useWebWalletLogin({ callbackRoute, nativeAuth: false });
-  const [initWalletConnectLogin] = useWalletConnectV2Login({
-    callbackRoute,
-    logoutRoute: '/',
-    nativeAuth: false,
-  });
 
   const handleLogin = async (provider: string) => {
     setShowModal(false);
     try {
-      switch (provider) {
-        case 'extension':
-          await initExtensionLogin();
-          break;
-        case 'web':
-          await initWebWalletLogin();
-          break;
-        case 'mobile':
-        case 'xportal':
-          await initWalletConnectLogin();
-          break;
-        default:
-          console.warn('Unknown provider:', provider);
-      }
+      await login(provider);
     } catch (err) {
       console.error('Login failed:', err);
     }
   };
 
   const handleLogout = () => {
-    logout(window.location.pathname);
+    logout();
   };
 
-  if (isLoggedIn && address) {
+  if (isAuthenticated && address) {
     return (
       <div className={`wallet-connector-connected ${variant}`}>
         <span className="wallet-address">
