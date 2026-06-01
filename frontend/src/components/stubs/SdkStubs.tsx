@@ -8,8 +8,11 @@ import {
   useLedgerLogin as realUseLedgerLogin,
   useWalletConnectV2Login as realUseWalletConnectV2Login
 } from '@multiversx/sdk-dapp/hooks';
-import { useLoginService } from '@multiversx/sdk-dapp/hooks/login/useLoginService';
-import { logout as sdkLogout } from '@multiversx/sdk-dapp/utils';
+import { useDispatch } from '@multiversx/sdk-dapp/reduxStore/DappProviderContext';
+import { setLoginMethod, setTokenLogin } from '@multiversx/sdk-dapp/reduxStore/slices/loginInfoSlice';
+import { setAccount, setAddress } from '@multiversx/sdk-dapp/reduxStore/slices/accountInfoSlice';
+import { logout as sdkLogout, parseNavigationParams } from '@multiversx/sdk-dapp/utils';
+import { LoginMethodsEnum } from '@multiversx/sdk-dapp/types';
 
 // Re-export raw hooks for components that need them directly
 export const useGetLoginInfo = realUseGetLoginInfo;
@@ -32,31 +35,44 @@ export interface WalletContextType {
 const WalletContext = createContext<WalletContextType | null>(null);
 
 const LoginCallbackHandler: React.FC = () => {
-  const { setTokenLoginInfo } = useLoginService();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    const address = searchParams.get('address');
-    const signature = searchParams.get('signature');
+    const { params, clearNavigationHistory } = parseNavigationParams([
+      'address',
+      'signature'
+    ]);
+
+    const address = params.address;
+    const signature = params.signature;
 
     if (address && signature) {
-      // Delay to let Redux-persist rehydration finish before restoring login state
-      const timer = setTimeout(() => {
-        console.log('Restoring extension login for:', address);
-        try {
-          setTokenLoginInfo({ address, signature });
-        } catch (err) {
-          console.error('Login restore failed:', err);
-        }
-        // Clean URL without reload
-        const url = new URL(window.location.href);
-        url.search = '';
-        window.history.replaceState({}, document.title, url.toString());
-      }, 2500);
+      console.log('Processing extension login callback for address:', address);
+      try {
+        // Restore full login state for HashRouter compatibility
+        dispatch(setLoginMethod(LoginMethodsEnum.extension));
+        dispatch(setTokenLogin({
+          loginToken: signature,
+          signature
+        }));
+        dispatch(setAddress(address));
+        dispatch(setAccount({
+          address,
+          balance: '0',
+          nonce: 0,
+          txCount: 0,
+          scrCount: 0,
+          claimableRewards: '0',
+          isGuarded: false
+        } as any));
+      } catch (err) {
+        console.error('Login callback processing failed:', err);
+      }
 
-      return () => clearTimeout(timer);
+      // Clean URL without reload
+      clearNavigationHistory();
     }
-  }, [setTokenLoginInfo]);
+  }, [dispatch]);
 
   return null;
 };
