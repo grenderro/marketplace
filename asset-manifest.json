@@ -1,0 +1,42 @@
+{
+  "files": {
+    "main.css": "/marketplace/static/css/main.2983b6d7.css",
+    "main.js": "/marketplace/static/js/main.d22e7369.js",
+    "static/js/1.c8c8d77e.chunk.js": "/marketplace/static/js/1.c8c8d77e.chunk.js",
+    "static/js/213.b7f61f3d.chunk.js": "/marketplace/static/js/213.b7f61f3d.chunk.js",
+    "static/js/483.32608972.chunk.js": "/marketplace/static/js/483.32608972.chunk.js",
+    "static/js/23.15123972.chunk.js": "/marketplace/static/js/23.15123972.chunk.js",
+    "static/js/941.27edabcd.chunk.js": "/marketplace/static/js/941.27edabcd.chunk.js",
+    "static/js/149.b7ef9285.chunk.js": "/marketplace/static/js/149.b7ef9285.chunk.js",
+    "static/js/809.d9846be6.chunk.js": "/marketplace/static/js/809.d9846be6.chunk.js",
+    "static/js/191.3fdb594c.chunk.js": "/marketplace/static/js/191.3fdb594c.chunk.js",
+    "static/js/629.f15b813b.chunk.js": "/marketplace/static/js/629.f15b813b.chunk.js",
+    "static/js/327.5af9fd8e.chunk.js": "/marketplace/static/js/327.5af9fd8e.chunk.js",
+    "static/js/468.8ca602ec.chunk.js": "/marketplace/static/js/468.8ca602ec.chunk.js",
+    "static/js/71.b317da66.chunk.js": "/marketplace/static/js/71.b317da66.chunk.js",
+    "static/js/361.6f926363.chunk.js": "/marketplace/static/js/361.6f926363.chunk.js",
+    "static/js/179.58ad8e22.chunk.js": "/marketplace/static/js/179.58ad8e22.chunk.js",
+    "static/js/783.5638ee44.chunk.js": "/marketplace/static/js/783.5638ee44.chunk.js",
+    "static/js/918.d8447abc.chunk.js": "/marketplace/static/js/918.d8447abc.chunk.js",
+    "static/js/934.9df58961.chunk.js": "/marketplace/static/js/934.9df58961.chunk.js",
+    "static/js/170.57068fc2.chunk.js": "/marketplace/static/js/170.57068fc2.chunk.js",
+    "static/js/90.e41c9799.chunk.js": "/marketplace/static/js/90.e41c9799.chunk.js",
+    "static/js/452.9fa48858.chunk.js": "/marketplace/static/js/452.9fa48858.chunk.js",
+    "static/js/989.0ef03f36.chunk.js": "/marketplace/static/js/989.0ef03f36.chunk.js",
+    "static/js/577.2ec2fa4a.chunk.js": "/marketplace/static/js/577.2ec2fa4a.chunk.js",
+    "static/js/782.587dd8f6.chunk.js": "/marketplace/static/js/782.587dd8f6.chunk.js",
+    "static/js/745.46da74f5.chunk.js": "/marketplace/static/js/745.46da74f5.chunk.js",
+    "static/js/603.d8ac30f0.chunk.js": "/marketplace/static/js/603.d8ac30f0.chunk.js",
+    "static/js/615.85b5848c.chunk.js": "/marketplace/static/js/615.85b5848c.chunk.js",
+    "static/js/319.26f38623.chunk.js": "/marketplace/static/js/319.26f38623.chunk.js",
+    "static/js/823.2c9e90f9.chunk.js": "/marketplace/static/js/823.2c9e90f9.chunk.js",
+    "static/js/961.3a8f27c1.chunk.js": "/marketplace/static/js/961.3a8f27c1.chunk.js",
+    "static/js/351.dd704cda.chunk.js": "/marketplace/static/js/351.dd704cda.chunk.js",
+    "static/media/axios.cjs": "/marketplace/static/media/axios.3272a31f226345def3e5.cjs",
+    "index.html": "/marketplace/index.html"
+  },
+  "entrypoints": [
+    "static/css/main.2983b6d7.css",
+    "static/js/main.d22e7369.js"
+  ]
+}

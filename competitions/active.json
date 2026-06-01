@@ -1,0 +1,52 @@
+{
+  "id": 1,
+  "name": "Spring Trading Championship",
+  "description": "Trade NFTs and ESDT tokens to climb the leaderboard and win epic prizes!",
+  "startTime": 1744800000,
+  "endTime": 1745404800,
+  "status": "active",
+  "totalParticipants": 1247,
+  "totalVolume": "4500000000000000000000",
+  "prizes": [
+    {
+      "rank": 1,
+      "type": "egld",
+      "amount": "50",
+      "token": null,
+      "description": "First place champion",
+      "displayValue": "50 EGLD"
+    },
+    {
+      "rank": 2,
+      "type": "esdt",
+      "amount": "25000",
+      "token": "USDC-350c4e",
+      "description": "Second place",
+      "displayValue": "25,000 USDC"
+    },
+    {
+      "rank": 3,
+      "type": "nft",
+      "amount": null,
+      "token": null,
+      "description": "Legendary NFT from top collection",
+      "displayValue": "Legendary NFT"
+    },
+    {
+      "rank": 4,
+      "type": "custom",
+      "amount": null,
+      "token": null,
+      "description": "Exclusive mystery box",
+      "displayValue": "Mystery Box"
+    },
+    {
+      "rank": 5,
+      "type": "custom",
+      "amount": null,
+      "token": null,
+      "description": "Exclusive mystery box",
+      "displayValue": "Mystery Box"
+    }
+  ]
+}

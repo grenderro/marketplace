@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkmarketplace_frontend=self.webpackChunkmarketplace_frontend||[]).push([[191],{60191(e,a,r){r.r(a),r.d(a,{css:()=>s.a,default:()=>s.b});var s=r(5849);r(91197);(0,s.d)()}}]);
