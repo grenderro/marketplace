@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback } from 'react';
+import React, { createContext, useContext, useCallback, useEffect } from 'react';
 import {
   useGetLoginInfo as realUseGetLoginInfo,
   useGetAccountInfo as realUseGetAccountInfo,
@@ -8,6 +8,7 @@ import {
   useLedgerLogin as realUseLedgerLogin,
   useWalletConnectV2Login as realUseWalletConnectV2Login
 } from '@multiversx/sdk-dapp/hooks';
+import { useLoginService } from '@multiversx/sdk-dapp/hooks/login/useLoginService';
 import { logout as sdkLogout } from '@multiversx/sdk-dapp/utils';
 
 // Re-export raw hooks for components that need them directly
@@ -30,15 +31,46 @@ export interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | null>(null);
 
+const LoginCallbackHandler: React.FC = () => {
+  const { setTokenLoginInfo } = useLoginService();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const address = searchParams.get('address');
+    const signature = searchParams.get('signature');
+
+    if (address && signature) {
+      // Delay to let Redux-persist rehydration finish before restoring login state
+      const timer = setTimeout(() => {
+        console.log('Restoring extension login for:', address);
+        try {
+          setTokenLoginInfo({ address, signature });
+        } catch (err) {
+          console.error('Login restore failed:', err);
+        }
+        // Clean URL without reload
+        const url = new URL(window.location.href);
+        url.search = '';
+        window.history.replaceState({}, document.title, url.toString());
+      }, 2500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [setTokenLoginInfo]);
+
+  return null;
+};
+
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isLoggedIn } = realUseGetLoginInfo();
   const { address, account } = realUseGetAccountInfo();
 
   // IMPORTANT: With HashRouter, the server only serves the root HTML file.
   // The actual route lives in window.location.hash. The web wallet redirect
-  // must come back to '/' so the SPA loads and sdk-dapp can read the
+  // must come back to the app's base path so the SPA loads and sdk-dapp can read the
   // query parameters and restore the session.
-  const callbackRoute = '/';
+  // Detect base path from current URL (e.g. '/marketplace/' on GitHub Pages, '/' on localhost)
+  const callbackRoute = window.location.pathname || '/';
 
   // Initialize login hooks ONCE at the provider level.
   // Never call these inside individual components or page hooks.
@@ -90,6 +122,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   return (
     <WalletContext.Provider value={value}>
+      <LoginCallbackHandler />
       {children}
     </WalletContext.Provider>
   );

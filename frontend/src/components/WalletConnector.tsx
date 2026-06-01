@@ -7,7 +7,7 @@ interface WalletConnectorProps {
 }
 
 export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav' }) => {
-  const { address, isAuthenticated, login, logout } = useSdk();
+  const { address, isAuthenticated, formattedBalance, login, logout } = useSdk();
   const [showModal, setShowModal] = useState(false);
 
   const handleLogin = async (provider: string) => {
@@ -25,11 +25,20 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav
 
   if (isAuthenticated && address) {
     return (
-      <div className={`wallet-connector-connected ${variant}`}>
-        <span className="wallet-address">
-          {address.slice(0, 6)}...{address.slice(-4)}
-        </span>
-        <button onClick={handleLogout} className="disconnect-btn">
+      <div className={`wallet-connector-connected ${variant}`} style={connectedContainerStyle}>
+        <div style={connectedBadgeStyle}>
+          <span style={dotStyle} />
+          Connected
+        </div>
+        <div style={addressBalanceStyle}>
+          <span style={addressStyle} title={address}>
+            {address.slice(0, 8)}...{address.slice(-4)}
+          </span>
+          <span style={balanceStyle}>
+            {formattedBalance} EGLD
+          </span>
+        </div>
+        <button onClick={handleLogout} style={disconnectBtnStyle}>
           Disconnect
         </button>
       </div>
@@ -105,6 +114,65 @@ export const WalletConnector: React.FC<WalletConnectorProps> = ({ variant = 'nav
   );
 };
 
+const connectedContainerStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.75rem',
+  padding: '0.5rem 1rem',
+  background: 'rgba(0, 212, 255, 0.1)',
+  borderRadius: '12px',
+  border: '1px solid rgba(0, 212, 255, 0.2)',
+};
+
+const connectedBadgeStyle: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '0.35rem',
+  fontSize: '0.75rem',
+  fontWeight: 600,
+  color: '#00d4ff',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+};
+
+const dotStyle: React.CSSProperties = {
+  width: '8px',
+  height: '8px',
+  borderRadius: '50%',
+  background: '#00d4ff',
+  display: 'inline-block',
+};
+
+const addressBalanceStyle: React.CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '0.15rem',
+};
+
+const addressStyle: React.CSSProperties = {
+  fontSize: '0.85rem',
+  fontWeight: 600,
+  color: '#fff',
+  fontFamily: 'monospace',
+};
+
+const balanceStyle: React.CSSProperties = {
+  fontSize: '0.75rem',
+  color: '#94a3b8',
+};
+
+const disconnectBtnStyle: React.CSSProperties = {
+  padding: '0.4rem 0.75rem',
+  background: 'transparent',
+  border: '1px solid rgba(239, 68, 68, 0.3)',
+  borderRadius: '8px',
+  color: '#ef4444',
+  fontSize: '0.75rem',
+  cursor: 'pointer',
+  transition: 'all 0.2s',
+};
+
 const walletButtonStyle: React.CSSProperties = {
   padding: '1rem',
   background: 'linear-gradient(135deg, #00d4ff 0%, #0099cc 100%)',
@@ -116,3 +184,5 @@ const walletButtonStyle: React.CSSProperties = {
   cursor: 'pointer',
   transition: 'all 0.2s',
 };
+
+export default WalletConnector;
