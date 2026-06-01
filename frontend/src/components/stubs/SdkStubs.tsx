@@ -34,10 +34,10 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const { isLoggedIn } = realUseGetLoginInfo();
   const { address, account } = realUseGetAccountInfo();
 
-  // With BrowserRouter + basename='/marketplace', the callback route is '/'.
+  // With BrowserRouter + basename='/marketplace', window.location.pathname is '/marketplace/'.
   // The wallet will redirect to /marketplace/?address=...&signature=...
-  // ProviderInitializer will see route '/' and parse the query params correctly.
-  const callbackRoute = '/';
+  // ProviderInitializer should see '/marketplace/' matching callbackRoute and parse the query params.
+  const callbackRoute = window.location.pathname || '/';
 
   // Initialize login hooks ONCE at the provider level.
   // Never call these inside individual components or page hooks.
