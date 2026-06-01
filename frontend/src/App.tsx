@@ -1,7 +1,7 @@
 // App.js
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; // Changed to HashRouter
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { DappProvider } from '@multiversx/sdk-dapp/wrappers';
 import { TransactionsToastList } from '@multiversx/sdk-dapp/UI/TransactionsToastList';
 import { SignTransactionsModals } from '@multiversx/sdk-dapp/UI/SignTransactionsModals';
@@ -24,7 +24,7 @@ const queryClient = new QueryClient();
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router> {/* HashRouter now */}
+      <Router basename="/marketplace">
         <DappProvider
           environment={ACTIVE_NETWORK.id}
           customNetworkConfig={{
